@@ -89,8 +89,8 @@ entity_platform_collision :: proc() {
 
 		for tile in gamestate.level.tiles {
 			if !tile_has_property(tile, .Collision) {continue}
-			nearest_platform := project_point_onto_tile(
-				tile,
+			nearest_platform := project_point_onto_position(
+				tile.position + gamestate.level.position,
 				entity.translation,
 			)
 			if l.distance(entity.translation, nearest_platform) <
@@ -121,7 +121,10 @@ entity_platform_collision :: proc() {
 
 		for tile in gamestate.level.tiles {
 			feet_position := entity.translation + Vec2{0, entity.radius + 2}
-			nearest_feet := project_point_onto_tile(tile, feet_position)
+			nearest_feet := project_point_onto_position(
+				tile.position + gamestate.level.position,
+				feet_position,
+			)
 			if l.distance(feet_position, nearest_feet) < 0.5 {
 				ground_hits += 1
 			}
@@ -135,8 +138,8 @@ entity_platform_collision :: proc() {
 	}
 }
 
-project_point_onto_tile :: proc(tile: Tile, point: Vec2) -> Vec2 {
-	min := tile.position - ({TILE_SIZE / 2, TILE_SIZE / 2}) + {8, 8}
-	max := tile.position + ({TILE_SIZE / 2, TILE_SIZE / 2}) + {8, 8}
+project_point_onto_position :: proc(position: Vec2, point: Vec2) -> Vec2 {
+	min := position
+	max := position + {TILE_SIZE, TILE_SIZE}
 	return l.clamp(point, min, max)
 }
