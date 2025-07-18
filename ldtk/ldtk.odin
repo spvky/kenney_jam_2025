@@ -1,4 +1,4 @@
-package ldtk
+package main
 
 import "core:encoding/json"
 import "core:os"

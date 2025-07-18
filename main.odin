@@ -12,6 +12,11 @@ TICK_RATE :: 1.0 / 200.0
 
 time: Time
 gamestate: GameState
+entity_textures: [Entity_Tag]rl.Texture2D
+entities := make([dynamic]Entity,0,16)
+platforms := [?]Platform {
+	{translation = {70,90}, size = {30,5}}
+}
 
 Time :: struct {
 	t:               f32,
@@ -23,9 +28,13 @@ GameState :: struct {
 	render_surface: rl.RenderTexture,
 }
 
+Vec2 :: [2]f32
+
 main :: proc() {
 	rl.InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "KenneyJam")
 	defer rl.CloseWindow()
+	entity_textures = load_textures()
+	append(&entities, make_player())
 
 	gamestate.render_surface = rl.LoadRenderTexture(
 		SCREEN_WIDTH,
@@ -35,15 +44,18 @@ main :: proc() {
 	for !rl.WindowShouldClose() {
 		update()
 		draw()
+		free_all(context.temp_allocator)
 	}
+	unload_textures()
+	delete(entities)
 }
 
 
 draw :: proc() {
 	rl.BeginTextureMode(gamestate.render_surface)
 	rl.ClearBackground(rl.BLACK)
-
-	rl.DrawCircle(20, 20, 2, rl.WHITE)
+	draw_tiles()
+	render_entities()
 	rl.EndTextureMode()
 
 	rl.BeginDrawing()
@@ -60,6 +72,7 @@ draw :: proc() {
 
 
 update :: proc() -> f32 {
+	animate_entities()
 	if !time.started {
 		time.t = f32(rl.GetTime())
 		time.started = true
@@ -74,6 +87,7 @@ update :: proc() -> f32 {
 	time.simulation_time += elapsed
 	for time.simulation_time >= TICK_RATE {
 		// Physics stuff
+		physics_step()
 		//
 		time.simulation_time -= TICK_RATE
 	}
