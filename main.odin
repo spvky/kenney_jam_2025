@@ -18,6 +18,7 @@ input_buffer: Input_Buffer
 entity_textures: [Entity_Tag]rl.Texture2D
 entities := make([dynamic]Entity, 0, 16)
 platforms := [?]Platform{{translation = {70, 90}, size = {30, 5}}}
+static_meter := Static_Meter{max_charge= 100, charge= 0}
 tilesheet: rl.Texture
 
 
@@ -86,6 +87,7 @@ draw :: proc() {
 	rl.ClearBackground(rl.BLACK)
 	draw_tiles(gamestate.level, tilesheet)
 	render_entities()
+	draw_static_meter()
 	rl.EndTextureMode()
 
 	rl.BeginDrawing()
