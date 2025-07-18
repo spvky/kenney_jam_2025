@@ -1,5 +1,6 @@
 package main
 
+import math "core:math"
 import rl "vendor:raylib"
 
 SCREEN_WIDTH :: 1600
@@ -41,10 +42,8 @@ update :: proc() -> f32 {
 	//
 
 	t1 := f32(rl.GetTime())
-	elapsed := t1 - time.t
-	if elapsed > 0.25 {
-		elapsed = 0.25
-	}
+	elapsed := math.min(t1 - time.t, 0.25)
+
 	time.t = t1
 	time.simulation_time += elapsed
 	for time.simulation_time >= TICK_RATE {
