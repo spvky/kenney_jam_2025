@@ -32,6 +32,12 @@ Animation_Player :: struct {
 	texture: ^rl.Texture2D
 }
 
+Animation_Tag :: enum {
+	Idle,
+	Run,
+	Jump
+}
+
 Speed :: struct {
 	max: f32,
 	base_acceleration: f32,
