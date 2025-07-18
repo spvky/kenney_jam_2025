@@ -17,21 +17,27 @@ Tile :: struct {
 	rotation:    f32,
 	alpha:       f32,
 	position:    rl.Vector2,
-	properties: bit_set[Tile_Property]
+	properties:  bit_set[Tile_Property],
 }
 
-Tile_Property :: enum {Collision, Slippery, Static_Gen}
+Tile_Property :: enum {
+	Collision,
+	Slippery,
+	Static_Gen,
+}
 
-properties_from_strings :: proc(properties: []string) -> bit_set[Tile_Property] {
+properties_from_strings :: proc(
+	properties: []string,
+) -> bit_set[Tile_Property] {
 	property_set: bit_set[Tile_Property]
 	for value in properties {
 		switch value {
-			case "Collision":
-				property_set = property_set | {.Collision}
-			case "Slippery":
-				property_set = property_set | {.Slippery}
-			case "Static_Gen":
-				property_set = property_set | {.Static_Gen}
+		case "Collision":
+			property_set = property_set | {.Collision}
+		case "Slippery":
+			property_set = property_set | {.Slippery}
+		case "Static_Gen":
+			property_set = property_set | {.Static_Gen}
 		}
 	}
 	return property_set
