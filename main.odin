@@ -1,6 +1,8 @@
 package main
 
+import fmt "core:fmt"
 import math "core:math"
+import ldtk "ldtk"
 import rl "vendor:raylib"
 
 WINDOW_WIDTH :: 1600
@@ -13,10 +15,9 @@ TICK_RATE :: 1.0 / 200.0
 time: Time
 gamestate: GameState
 entity_textures: [Entity_Tag]rl.Texture2D
-entities := make([dynamic]Entity,0,16)
-platforms := [?]Platform {
-	{translation = {70,90}, size = {30,5}}
-}
+entities := make([dynamic]Entity, 0, 16)
+platforms := [?]Platform{{translation = {70, 90}, size = {30, 5}}}
+tilesheet: rl.Texture
 
 Time :: struct {
 	t:               f32,
@@ -26,6 +27,7 @@ Time :: struct {
 
 GameState :: struct {
 	render_surface: rl.RenderTexture,
+	level:          Level,
 }
 
 Vec2 :: [2]f32
@@ -34,7 +36,19 @@ main :: proc() {
 	rl.InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "KenneyJam")
 	defer rl.CloseWindow()
 	entity_textures = load_textures()
+	tilesheet = rl.LoadTexture(
+		"assets/Tilemap/monochrome_tilemap_transparent.png",
+	)
 	append(&entities, make_player())
+
+
+	if project, ok := ldtk.load_from_file(
+		   "assets/level.ldtk",
+		   context.temp_allocator,
+	   ).?; ok {
+
+		gamestate.level.tiles = load_tiles(project.levels[0])
+	}
 
 	gamestate.render_surface = rl.LoadRenderTexture(
 		SCREEN_WIDTH,
@@ -54,7 +68,7 @@ main :: proc() {
 draw :: proc() {
 	rl.BeginTextureMode(gamestate.render_surface)
 	rl.ClearBackground(rl.BLACK)
-	draw_tiles()
+	draw_tiles(gamestate.level, tilesheet)
 	render_entities()
 	rl.EndTextureMode()
 

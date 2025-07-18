@@ -6,12 +6,12 @@ import rl "vendor:raylib"
 
 Platform :: struct {
 	translation: Vec2,
-	size: Vec2,
+	size:        Vec2,
 }
 
 Collision_Data :: struct {
 	normal: Vec2,
-	mtv: Vec2,
+	mtv:    Vec2,
 }
 
 physics_step :: proc() {
@@ -30,17 +30,22 @@ simulate_dynamics :: proc() {
 apply_gravity :: proc() {
 	for &entity in entities {
 		switch entity.state {
-			case .Airborne:
-				entity.velocity.y += 100 * TICK_RATE
-			case .Grounded:
-				entity.velocity.y = 0
+		case .Airborne:
+			entity.velocity.y += 100 * TICK_RATE
+		case .Grounded:
+			entity.velocity.y = 0
 		}
 	}
 }
 
 entity_platform_collision :: proc() {
 	// Helper proc to calculate collision
-	calculate_collision :: proc(collisions: ^[dynamic]Collision_Data, nearest_entity: Vec2, nearest_collider: Vec2, radius: f32) {
+	calculate_collision :: proc(
+		collisions: ^[dynamic]Collision_Data,
+		nearest_entity: Vec2,
+		nearest_collider: Vec2,
+		radius: f32,
+	) {
 		collision: Collision_Data
 		collision_vector := nearest_entity - nearest_collider
 		pen_depth := radius - l.length(collision_vector)
@@ -52,21 +57,35 @@ entity_platform_collision :: proc() {
 	}
 
 	for &entity in entities {
-		collisions := make([dynamic]Collision_Data, 0, 8, allocator = context.temp_allocator)
+		collisions := make(
+			[dynamic]Collision_Data,
+			0,
+			8,
+			allocator = context.temp_allocator,
+		)
 
 		for platform in platforms {
-			nearest_platform := project_point_onto_platform(platform, entity.translation)
-			if l.distance(entity.translation, nearest_platform) < entity.radius {
-				calculate_collision(&collisions, entity.translation, nearest_platform, entity.radius)
+			nearest_platform := project_point_onto_platform(
+				platform,
+				entity.translation,
+			)
+			if l.distance(entity.translation, nearest_platform) <
+			   entity.radius {
+				calculate_collision(
+					&collisions,
+					entity.translation,
+					nearest_platform,
+					entity.radius,
+				)
 			}
 		}
 
 		// Respond to collisions
 		for collision in collisions {
 			entity.translation += collision.mtv
-			x_dot := math.abs(l.dot(collision.normal, Vec2{1,0}))
-			y_dot := math.abs(l.dot(collision.normal, Vec2{0,1}))
-			if  x_dot > 0.7 {
+			x_dot := math.abs(l.dot(collision.normal, Vec2{1, 0}))
+			y_dot := math.abs(l.dot(collision.normal, Vec2{0, 1}))
+			if x_dot > 0.7 {
 				entity.velocity.x = 0
 			}
 			if y_dot > 0.7 {
@@ -78,7 +97,10 @@ entity_platform_collision :: proc() {
 
 		for platform in platforms {
 			feet_position := entity.translation + Vec2{0, entity.radius}
-			nearest_feet := project_point_onto_platform(platform, feet_position)
+			nearest_feet := project_point_onto_platform(
+				platform,
+				feet_position,
+			)
 			if l.distance(feet_position, nearest_feet) < 2 {
 				ground_hits += 1
 			}
@@ -96,13 +118,4 @@ project_point_onto_platform :: proc(platform: Platform, point: Vec2) -> Vec2 {
 	min := platform.translation - (platform.size / 2)
 	max := platform.translation + (platform.size / 2)
 	return l.clamp(point, min, max)
-}
-
-draw_tiles :: proc() {
-	for platform in platforms {
-		color := rl.WHITE
-		position := [2]f32{platform.translation.x, platform.translation.y}
-		size := [2]f32{platform.size.x, platform.size.y}
-		rl.DrawRectangleV(position, size, color)
-	}
 }
