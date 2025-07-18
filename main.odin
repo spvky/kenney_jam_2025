@@ -4,14 +4,14 @@ import rl "vendor:raylib"
 
 SCREEN_WIDTH :: 1600
 SCREEN_HEIGHT :: 900
-TICK_RATE :: 1.0/200.0
+TICK_RATE :: 1.0 / 200.0
 
 time: Time
 
 Time :: struct {
-	t: f32,
+	t:               f32,
 	simulation_time: f32,
-	started: bool
+	started:         bool,
 }
 
 main :: proc() {
@@ -26,9 +26,9 @@ main :: proc() {
 
 
 draw :: proc() {
-		rl.BeginDrawing()
-		rl.ClearBackground(rl.BLACK)
-		rl.EndDrawing()
+	rl.BeginDrawing()
+	rl.ClearBackground(rl.BLACK)
+	rl.EndDrawing()
 }
 
 
@@ -54,5 +54,3 @@ update :: proc() -> f32 {
 	}
 	return time.simulation_time / TICK_RATE
 }
-	
-
