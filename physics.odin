@@ -43,7 +43,10 @@ apply_gravity :: proc() {
 
 manage_entity_velocity :: proc() {
 	for &entity in entities {
-		max, acceleration, deceleration := entity.speed.max, entity.speed.acceleration, entity.speed.deceleration
+		max, acceleration, deceleration :=
+			entity.speed.max,
+			entity.speed.acceleration,
+			entity.speed.deceleration
 		if entity.x_delta != 0 {
 			if entity.x_delta * entity.velocity.x < max {
 				entity.velocity.x += TICK_RATE * acceleration * entity.x_delta
@@ -85,6 +88,7 @@ entity_platform_collision :: proc() {
 		)
 
 		for tile in gamestate.level.tiles {
+			if !is_tile_collider(tile) {continue}
 			nearest_platform := project_point_onto_tile(
 				tile,
 				entity.translation,
@@ -116,7 +120,7 @@ entity_platform_collision :: proc() {
 		ground_hits: int
 
 		for tile in gamestate.level.tiles {
-			feet_position := entity.translation + Vec2{0, entity.radius+2}
+			feet_position := entity.translation + Vec2{0, entity.radius + 2}
 			nearest_feet := project_point_onto_tile(tile, feet_position)
 			if l.distance(feet_position, nearest_feet) < 0.5 {
 				ground_hits += 1
@@ -132,7 +136,7 @@ entity_platform_collision :: proc() {
 }
 
 project_point_onto_tile :: proc(tile: Tile, point: Vec2) -> Vec2 {
-	min := tile.position - ({TILE_SIZE/2,TILE_SIZE/2}) + {8,8}
-	max := tile.position + ({TILE_SIZE/2,TILE_SIZE/2}) + {8,8}
+	min := tile.position - ({TILE_SIZE / 2, TILE_SIZE / 2}) + {8, 8}
+	max := tile.position + ({TILE_SIZE / 2, TILE_SIZE / 2}) + {8, 8}
 	return l.clamp(point, min, max)
 }

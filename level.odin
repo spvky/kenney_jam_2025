@@ -17,6 +17,10 @@ Tile :: struct {
 	properties:  [dynamic]string,
 }
 
+is_tile_collider :: proc(tile: Tile) -> bool {
+	return len(tile.properties) > 0
+}
+
 load_tiles :: proc(
 	level: ldtk.Level,
 	tileset_definition: ldtk.Tileset_Definition,
