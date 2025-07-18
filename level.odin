@@ -34,7 +34,6 @@ properties_from_strings :: proc(properties: []string) -> bit_set[Tile_Property] 
 				property_set = property_set | {.Static_Gen}
 		}
 	}
-	fmt.printfln("Tile Properties: %v", card(property_set))
 	return property_set
 }
 
