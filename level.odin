@@ -47,6 +47,39 @@ tile_has_property :: proc(tile: Tile, property: Tile_Property) -> bool {
 	return property in tile.properties
 }
 
+add_tile :: proc(
+	tiles: ^[dynamic]Tile,
+	tileset_definition: ldtk.Tileset_Definition,
+	tile: ldtk.Tile_Instance,
+) {
+	raw_properties: [dynamic]string
+	for def in tileset_definition.enum_tags {
+		found := false
+		for id in def.tile_ids {
+			if id == tile.t {
+				found = true
+				break
+			}
+		}
+		if found {
+			append(&raw_properties, def.enum_value_id)
+		}
+	}
+	properties := properties_from_strings(raw_properties[:])
+	delete(raw_properties)
+	append(
+		tiles,
+		Tile {
+			{f32(tile.src[0]), f32(tile.src[1]), TILE_SIZE, TILE_SIZE},
+			0,
+			tile.a,
+			{f32(tile.px[0]), f32(tile.px[1])},
+			properties,
+		},
+	)
+
+}
+
 load_tiles :: proc(
 	level: ldtk.Level,
 	tileset_definition: ldtk.Tileset_Definition,
@@ -57,38 +90,12 @@ load_tiles :: proc(
 		switch layer.type {
 		case .Entities:
 		case .Tiles:
+			for tile in layer.grid_tiles {
+				add_tile(&tiles, tileset_definition, tile)
+			}
 		case .AutoLayer, .IntGrid:
 			for tile in layer.auto_layer_tiles {
-				raw_properties: [dynamic]string
-				for def in tileset_definition.enum_tags {
-					found := false
-					for id in def.tile_ids {
-						if id == tile.t {
-							found = true
-							break
-						}
-					}
-					if found {
-						append(&raw_properties, def.enum_value_id)
-					}
-				}
-				properties := properties_from_strings(raw_properties[:])
-				delete(raw_properties)
-				append(
-					&tiles,
-					Tile {
-						{
-							f32(tile.src[0]),
-							f32(tile.src[1]),
-							TILE_SIZE,
-							TILE_SIZE,
-						},
-						0,
-						tile.a,
-						{f32(tile.px[0]), f32(tile.px[1])},
-						properties,
-					},
-				)
+				add_tile(&tiles, tileset_definition, tile)
 			}
 		}
 	}

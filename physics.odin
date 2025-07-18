@@ -120,6 +120,8 @@ entity_platform_collision :: proc() {
 		ground_hits: int
 
 		for tile in gamestate.level.tiles {
+			if !tile_has_property(tile, .Collision) {continue}
+
 			feet_position := entity.translation + Vec2{0, entity.radius + 2}
 			nearest_feet := project_point_onto_position(
 				tile.position + gamestate.level.position,
