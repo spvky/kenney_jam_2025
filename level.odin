@@ -6,7 +6,10 @@ import rl "vendor:raylib"
 TILE_SIZE :: 16
 
 Level :: struct {
-	tiles: [dynamic]Tile,
+	tiles:    [dynamic]Tile,
+	width:    int,
+	height:   int,
+	position: rl.Vector2,
 }
 
 Tile :: struct {
@@ -69,6 +72,11 @@ load_tiles :: proc(
 
 draw_tiles :: proc(level: Level, tilesheet: rl.Texture) {
 	for tile in level.tiles {
-		rl.DrawTextureRec(tilesheet, tile.draw_coords, tile.position, rl.WHITE)
+		rl.DrawTextureRec(
+			tilesheet,
+			tile.draw_coords,
+			get_relative_pos(tile.position),
+			rl.WHITE,
+		)
 	}
 }

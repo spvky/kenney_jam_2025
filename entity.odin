@@ -94,9 +94,18 @@ animate_entities :: proc() {
 render_entities :: proc() {
 	for entity in entities {
 		texture := entity.animation_player.texture^
-		texture_rec := rl.Rectangle{x=f32(entity.animation_player.anim_index)*16,y=0,width=16 * entity.facing, height=16}
-		offset := Vec2{-8,-8}
-		rl.DrawTextureRec(texture, texture_rec, entity.snapshot + offset, rl.WHITE)
+		texture_rec := rl.Rectangle {
+			x      = f32(entity.animation_player.anim_index) * 16,
+			y      = 0,
+			width  = 16 * entity.facing,
+			height = 16,
+		}
+		offset := Vec2{-8, -8}
+		rl.DrawTextureRec(
+			texture,
+			texture_rec,
+			get_relative_pos(entity.snapshot + offset),
+			rl.WHITE,
+		)
 	}
 }
-
