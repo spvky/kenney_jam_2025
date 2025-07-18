@@ -88,7 +88,7 @@ entity_platform_collision :: proc() {
 		)
 
 		for tile in gamestate.level.tiles {
-			if !is_tile_collider(tile) {continue}
+			if !tile_has_property(tile, .Collision) {continue}
 			nearest_platform := project_point_onto_tile(
 				tile,
 				entity.translation,

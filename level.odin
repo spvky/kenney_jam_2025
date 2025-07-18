@@ -17,11 +17,29 @@ Tile :: struct {
 	rotation:    f32,
 	alpha:       f32,
 	position:    rl.Vector2,
-	properties:  [dynamic]string,
+	properties: bit_set[Tile_Property]
 }
 
-is_tile_collider :: proc(tile: Tile) -> bool {
-	return len(tile.properties) > 0
+Tile_Property :: enum {Collision, Slippery, Static_Gen}
+
+properties_from_strings :: proc(properties: []string) -> bit_set[Tile_Property] {
+	property_set: bit_set[Tile_Property]
+	for value in properties {
+		switch value {
+			case "Collision":
+				property_set = property_set | {.Collision}
+			case "Slippery":
+				property_set = property_set | {.Slippery}
+			case "Static_Gen":
+				property_set = property_set | {.Static_Gen}
+		}
+	}
+	fmt.printfln("Tile Properties: %v", card(property_set))
+	return property_set
+}
+
+tile_has_property :: proc(tile: Tile, property: Tile_Property) -> bool {
+	return property in tile.properties
 }
 
 load_tiles :: proc(
@@ -36,7 +54,7 @@ load_tiles :: proc(
 		case .Tiles:
 		case .AutoLayer, .IntGrid:
 			for tile in layer.auto_layer_tiles {
-				properties: [dynamic]string
+				raw_properties: [dynamic]string
 				for def in tileset_definition.enum_tags {
 					found := false
 					for id in def.tile_ids {
@@ -46,9 +64,11 @@ load_tiles :: proc(
 						}
 					}
 					if found {
-						append(&properties, def.enum_value_id)
+						append(&raw_properties, def.enum_value_id)
 					}
 				}
+				properties := properties_from_strings(raw_properties[:])
+				delete(raw_properties)
 				append(
 					&tiles,
 					Tile {
