@@ -34,7 +34,7 @@ apply_gravity :: proc() {
 	for &entity in entities {
 		switch entity.state {
 		case .Airborne:
-			entity.velocity.y += 100 * TICK_RATE
+			entity.velocity.y += 200 * TICK_RATE
 		case .Grounded:
 			entity.velocity.y = 0
 		}
@@ -116,7 +116,7 @@ entity_platform_collision :: proc() {
 		ground_hits: int
 
 		for tile in gamestate.level.tiles {
-			feet_position := entity.translation + Vec2{0, entity.radius}
+			feet_position := entity.translation + Vec2{0, entity.radius+2}
 			nearest_feet := project_point_onto_tile(tile, feet_position)
 			if l.distance(feet_position, nearest_feet) < 0.5 {
 				ground_hits += 1
@@ -132,7 +132,7 @@ entity_platform_collision :: proc() {
 }
 
 project_point_onto_tile :: proc(tile: Tile, point: Vec2) -> Vec2 {
-	min := tile.position - ({TILE_SIZE/2,TILE_SIZE/2})
-	max := tile.position + ({TILE_SIZE/2,TILE_SIZE/2})
+	min := tile.position - ({TILE_SIZE/2,TILE_SIZE/2}) + {8,8}
+	max := tile.position + ({TILE_SIZE/2,TILE_SIZE/2}) + {8,8}
 	return l.clamp(point, min, max)
 }

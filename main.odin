@@ -85,7 +85,6 @@ draw :: proc() {
 	rl.EndDrawing()
 }
 
-
 update :: proc() -> f32 {
 	animate_entities()
 	if !time.started {

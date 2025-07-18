@@ -25,7 +25,7 @@ player_jump :: proc() {
 			if is_action_buffered(.Jump) {
 			 #partial switch entity.state {
 				case .Grounded:
-					entity.velocity.y = -60
+					entity.velocity.y = -100
 					consume_action(.Jump)
 			 }
 			}
