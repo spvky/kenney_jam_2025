@@ -23,11 +23,11 @@ player_jump :: proc() {
 	for &entity in entities {
 		if entity.tag == .Player {
 			if is_action_buffered(.Jump) {
-			 #partial switch entity.state {
+				#partial switch entity.state {
 				case .Grounded:
 					entity.velocity.y = -100
 					consume_action(.Jump)
-			 }
+				}
 			}
 		}
 	}
