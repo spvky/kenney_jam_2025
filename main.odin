@@ -48,7 +48,10 @@ main :: proc() {
 		   context.temp_allocator,
 	   ).?; ok {
 
-		gamestate.level.tiles = load_tiles(project.levels[0])
+		gamestate.level.tiles = load_tiles(
+			project.levels[0],
+			project.defs.tilesets[0],
+		)
 	}
 
 	gamestate.render_surface = rl.LoadRenderTexture(
