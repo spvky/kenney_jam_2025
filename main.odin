@@ -14,6 +14,7 @@ TICK_RATE :: 1.0 / 200.0
 
 time: Time
 gamestate: GameState
+input_buffer: Input_Buffer
 entity_textures: [Entity_Tag]rl.Texture2D
 entities := make([dynamic]Entity, 0, 16)
 platforms := [?]Platform{{translation = {70, 90}, size = {30, 5}}}
@@ -91,8 +92,7 @@ update :: proc() -> f32 {
 		time.t = f32(rl.GetTime())
 		time.started = true
 	}
-	// Get Input
-	//
+	input()
 
 	t1 := f32(rl.GetTime())
 	elapsed := math.min(t1 - time.t, 0.25)

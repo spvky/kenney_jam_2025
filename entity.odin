@@ -6,10 +6,13 @@ Entity :: struct {
 	tag: Entity_Tag,
 	state: Entity_State,
 	radius: f32,
-	animation_player: AnimationPlayer,
+	animation_player: Animation_Player,
 	translation: Vec2,
 	velocity: Vec2,
 	snapshot: Vec2,
+	x_delta: f32,
+	speed: Speed,
+	facing: f32
 }
 
 Entity_Tag :: enum {
@@ -21,7 +24,7 @@ Entity_State :: enum {
 	Airborne
 }
 
-AnimationPlayer :: struct {
+Animation_Player :: struct {
 	anim_index: int,
 	anim_length: int,
 	frame_length: f32,
@@ -29,19 +32,32 @@ AnimationPlayer :: struct {
 	texture: ^rl.Texture2D
 }
 
+Speed :: struct {
+	max: f32,
+	base_acceleration: f32,
+	acceleration: f32,
+	deceleration: f32
+}
+
 make_player :: proc() -> Entity {
 	return Entity {
 		tag = .Player,
 		state = .Grounded,
 		radius = 6,
-		animation_player = AnimationPlayer {
+		animation_player = Animation_Player {
 			anim_index = 2,
 			anim_length = 3,
 			frame_length = 0.25,
 			frametime = 0,
 			texture = &entity_textures[.Player]
 		},
-		translation = {70,50}
+		facing = 1,
+		translation = {70,50},
+		speed = Speed {
+				max = 50,
+				acceleration = 275,
+				deceleration = 0.025
+		}
 	}
 }
 
@@ -76,7 +92,7 @@ animate_entities :: proc() {
 render_entities :: proc() {
 	for entity in entities {
 		texture := entity.animation_player.texture^
-		texture_rec := rl.Rectangle{x=f32(entity.animation_player.anim_index)*16,y=0,width=16, height=16}
+		texture_rec := rl.Rectangle{x=f32(entity.animation_player.anim_index)*16,y=0,width=16 * entity.facing, height=16}
 		offset := Vec2{-8,-8}
 		rl.DrawTextureRec(texture, texture_rec, entity.snapshot + offset, rl.WHITE)
 	}

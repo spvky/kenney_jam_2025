@@ -1,5 +1,6 @@
 package main
 
+import "core:fmt"
 import "core:math"
 import l "core:math/linalg"
 import rl "vendor:raylib"
@@ -17,6 +18,8 @@ Collision_Data :: struct {
 physics_step :: proc() {
 	entity_platform_collision()
 	apply_gravity()
+	player_jump()
+	manage_entity_velocity()
 	simulate_dynamics()
 }
 
@@ -34,6 +37,23 @@ apply_gravity :: proc() {
 			entity.velocity.y += 100 * TICK_RATE
 		case .Grounded:
 			entity.velocity.y = 0
+		}
+	}
+}
+
+manage_entity_velocity :: proc() {
+	for &entity in entities {
+		max, acceleration, deceleration := entity.speed.max, entity.speed.acceleration, entity.speed.deceleration
+		if entity.x_delta != 0 {
+			if entity.x_delta * entity.velocity.x < max {
+				entity.velocity.x += TICK_RATE * acceleration * entity.x_delta
+			}
+		} else {
+			factor := 1 - deceleration
+			entity.velocity.x = entity.velocity.x * factor
+			if math.abs(entity.velocity.x) < 0.3 {
+				entity.velocity.x = 0
+			}
 		}
 	}
 }
@@ -97,16 +117,13 @@ entity_platform_collision :: proc() {
 
 		for platform in platforms {
 			feet_position := entity.translation + Vec2{0, entity.radius}
-			nearest_feet := project_point_onto_platform(
-				platform,
-				feet_position,
-			)
-			if l.distance(feet_position, nearest_feet) < 2 {
+			nearest_feet := project_point_onto_platform(platform, feet_position)
+			if l.distance(feet_position, nearest_feet) < 0.5 {
 				ground_hits += 1
 			}
 		}
 
-		if ground_hits > 1 {
+		if ground_hits > 0 {
 			entity.state = .Grounded
 		} else {
 			entity.state = .Airborne
