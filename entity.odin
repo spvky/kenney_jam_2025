@@ -29,7 +29,8 @@ Animation_Player :: struct {
 	anim_length: int,
 	frame_length: f32,
 	frametime: f32,
-	texture: ^rl.Texture2D
+	texture: ^rl.Texture2D,
+
 }
 
 Animation_Tag :: enum {
