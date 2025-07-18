@@ -94,7 +94,7 @@ draw_tiles :: proc(level: Level, tilesheet: rl.Texture) {
 		rl.DrawTextureRec(
 			tilesheet,
 			tile.draw_coords,
-			get_relative_pos(tile.position),
+			get_relative_pos(tile.position + level.position),
 			rl.WHITE,
 		)
 	}
