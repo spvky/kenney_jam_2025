@@ -179,3 +179,8 @@ check_killzone :: proc(level: Level, pos: rl.Vector2) -> bool {
 	}
 	return false
 }
+
+switch_level :: proc(current_index: int) {
+
+
+}
