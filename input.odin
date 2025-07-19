@@ -6,10 +6,12 @@ Input_Buffer :: struct {
 	actions: [Input_Action]Buffered_Input,
 }
 
-Buffered_Input :: union {f32}
+Buffered_Input :: union {
+	f32,
+}
 
 Input_Action :: enum {
-	Jump
+	Jump,
 }
 
 update_buffer :: proc() {
@@ -17,21 +19,21 @@ update_buffer :: proc() {
 
 	for &buffered in input_buffer.actions {
 		switch &v in buffered {
-			case f32:
-				v -= frametime
-				if v <= 0 {
-					buffered = nil
-				}
+		case f32:
+			v -= frametime
+			if v <= 0 {
+				buffered = nil
+			}
 		}
 	}
 }
 
 buffer_action :: proc(action: Input_Action) {
 	switch &v in input_buffer.actions[action] {
-		case f32:
-			v = 0.15
-		case:
-			input_buffer.actions[action] = 0.15
+	case f32:
+		v = 0.15
+	case:
+		input_buffer.actions[action] = 0.15
 	}
 }
 
