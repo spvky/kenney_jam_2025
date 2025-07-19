@@ -18,7 +18,10 @@ input_buffer: Input_Buffer
 entity_textures: [Entity_Tag]rl.Texture2D
 entities := make([dynamic]Entity, 0, 16)
 platforms := [?]Platform{{translation = {70, 90}, size = {30, 5}}}
-static_meter := Static_Meter{max_charge= 100, charge= 0}
+static_meter := Static_Meter {
+	max_charge = 100,
+	charge     = 0,
+}
 tilesheet: rl.Texture
 
 
@@ -40,17 +43,11 @@ main :: proc() {
 	rl.InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "KenneyJam")
 	defer rl.CloseWindow()
 	entity_textures = load_textures()
-	tilesheet = rl.LoadTexture(
-		"assets/Tilemap/monochrome_tilemap_transparent.png",
-	)
+	tilesheet = rl.LoadTexture("assets/Tilemap/monochrome_tilemap_transparent.png")
 	append(&entities, make_player())
 
 
-	if project, ok := ldtk.load_from_file(
-		   "assets/level.ldtk",
-		   context.temp_allocator,
-	   ).?; ok {
-
+	if project, ok := ldtk.load_from_file("assets/level.ldtk", context.temp_allocator).?; ok {
 		// TEMPORARY
 		level := project.levels[0]
 
@@ -60,10 +57,7 @@ main :: proc() {
 		gamestate.level.position = {f32(level.world_x), f32(level.world_y)}
 	}
 
-	gamestate.render_surface = rl.LoadRenderTexture(
-		SCREEN_WIDTH,
-		SCREEN_HEIGHT,
-	)
+	gamestate.render_surface = rl.LoadRenderTexture(SCREEN_WIDTH, SCREEN_HEIGHT)
 
 	for !rl.WindowShouldClose() {
 		update()
@@ -75,11 +69,7 @@ main :: proc() {
 }
 
 get_relative_pos :: proc(pos: rl.Vector2) -> rl.Vector2 {
-	return(
-		pos -
-		gamestate.camera_offset +
-		{SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2} \
-	)
+	return pos - gamestate.camera_offset + {SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2}
 }
 
 draw :: proc() {
@@ -124,26 +114,19 @@ update :: proc() -> f32 {
 
 	level := gamestate.level
 
-	target_position :=
-		(entities[Entity_Tag.Player].snapshot - gamestate.camera_offset) / 20
+	target_position := (entities[Entity_Tag.Player].snapshot - gamestate.camera_offset) / 20
 	gamestate.camera_offset += target_position
 
 	// clamping to level in x axis
 	gamestate.camera_offset.x = math.max(
 		level.position.x + SCREEN_WIDTH / 2,
-		math.min(
-			level.position.x + f32(level.width) - (SCREEN_WIDTH / 2),
-			gamestate.camera_offset.x,
-		),
+		math.min(level.position.x + f32(level.width) - (SCREEN_WIDTH / 2), gamestate.camera_offset.x),
 	)
 
 	// clamping to level in y axis
 	gamestate.camera_offset.y = math.max(
 		level.position.y + SCREEN_HEIGHT / 2,
-		math.min(
-			level.position.y + f32(level.height) - (SCREEN_HEIGHT / 2),
-			gamestate.camera_offset.y,
-		),
+		math.min(level.position.y + f32(level.height) - (SCREEN_HEIGHT / 2), gamestate.camera_offset.y),
 	)
 
 	return time.simulation_time / TICK_RATE
