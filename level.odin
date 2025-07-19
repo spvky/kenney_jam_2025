@@ -10,6 +10,7 @@ Level :: struct {
 	width:    int,
 	height:   int,
 	position: rl.Vector2,
+	entities: [dynamic]Level_Entity,
 }
 
 Tile :: struct {
@@ -18,6 +19,15 @@ Tile :: struct {
 	alpha:       f32,
 	position:    rl.Vector2,
 	properties:  bit_set[Tile_Property],
+}
+
+Level_Entity :: struct {
+	type:     enum {
+		Killzone,
+		Next_level,
+		Player_spawn,
+	},
+	position: rl.Vector2,
 }
 
 Tile_Property :: enum {
@@ -74,12 +84,35 @@ add_tile :: proc(tiles: ^[dynamic]Tile, tileset_definition: ldtk.Tileset_Definit
 
 }
 
+add_entity :: proc(entities: ^[dynamic]Level_Entity, entity_instance: ldtk.Entity_Instance) {
+	entity := Level_Entity {
+		position = {f32(entity_instance.px[0]), f32(entity_instance.px[1])},
+	}
+
+	switch entity_instance.identifier {
+	case "Killzone":
+		entity.type = .Killzone
+	case "Player_spawn":
+		entity.type = .Player_spawn
+	case "Next_level":
+		entity.type = .Next_level
+	}
+
+	append(entities, entity)
+}
+
+
 load_level :: proc(level: ldtk.Level, tileset_definition: ldtk.Tileset_Definition) -> Level {
 	tiles: [dynamic]Tile
+	entities: [dynamic]Level_Entity
 
 	for layer in level.layer_instances {
 		switch layer.type {
 		case .Entities:
+			for entity in layer.entity_instances {
+				add_entity(&entities, entity)
+			}
+
 		case .Tiles:
 			for tile in layer.grid_tiles {
 				add_tile(&tiles, tileset_definition, tile)
@@ -90,7 +123,9 @@ load_level :: proc(level: ldtk.Level, tileset_definition: ldtk.Tileset_Definitio
 			}
 		}
 	}
+
 	return {
+		entities = entities,
 		tiles = tiles,
 		height = level.px_height,
 		width = level.px_width,
@@ -113,4 +148,13 @@ get_all_levels :: proc(project: ldtk.Project) -> [dynamic]Level {
 		append(&levels, load_level(level, project.defs.tilesets[0]))
 	}
 	return levels
+}
+
+get_spawn_point :: proc(level: Level) -> rl.Vector2 {
+	for entity in level.entities {
+		if entity.type == .Player_spawn {
+			return entity.position
+		}
+	}
+	return {0, 0}
 }

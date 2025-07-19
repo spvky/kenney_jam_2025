@@ -46,7 +46,7 @@ Speed :: struct {
 	deceleration:      f32,
 }
 
-make_player :: proc() -> Entity {
+make_player :: proc(spawn_point: rl.Vector2) -> Entity {
 	return Entity {
 		tag = .Player,
 		state = .Grounded,
@@ -59,7 +59,7 @@ make_player :: proc() -> Entity {
 			texture = &entity_textures[.Player],
 		},
 		facing = 1,
-		translation = {70, 50},
+		translation = spawn_point,
 		speed = Speed{base_max = 50, max = 50, base_acceleration = 275, acceleration = 275, deceleration = 0.025},
 	}
 }

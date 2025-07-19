@@ -47,13 +47,15 @@ main :: proc() {
 	entity_textures = load_entity_textures()
 	ui_textures = load_ui_textures()
 	tilesheet = rl.LoadTexture("assets/Tilemap/monochrome_tilemap_transparent.png")
-	append(&entities, make_player())
 
 
 	if project, ok := ldtk.load_from_file("assets/level.ldtk", context.temp_allocator).?; ok {
 		gamestate.levels = get_all_levels(project)
 		gamestate.current_level = gamestate.levels[0]
 	}
+
+
+	append(&entities, make_player(get_spawn_point(gamestate.current_level)))
 
 	gamestate.render_surface = rl.LoadRenderTexture(SCREEN_WIDTH, SCREEN_HEIGHT)
 
