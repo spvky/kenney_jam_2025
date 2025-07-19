@@ -22,6 +22,12 @@ palette := [PALETTE_COUNT]rl.Vector3 {
 	{.1, .1, .1},
 }
 
+PaletteEnum :: enum {
+	Teal,
+	Red,
+	Green,
+}
+
 ripple_count: i32 = 0
 
 set_shader_uniforms :: proc(shader: rl.Shader) {
@@ -53,13 +59,13 @@ update :: proc() {
 	}
 }
 
-add :: proc(center: rl.Vector2, gradient: i32, diffuse_: f32 = 0) {
+add :: proc(center: rl.Vector2, gradient: PaletteEnum, diffuse_: f32 = 0) {
 	if ripple_count >= MAX_RIPPLES {return}
 
 	idx := int(ripple_count)
 	times[idx] = 0
 	diffuse[idx] = diffuse_
-	gradients[idx] = gradient
+	gradients[idx] = i32(gradient)
 	centers[idx] = center
 
 	ripple_count += 1

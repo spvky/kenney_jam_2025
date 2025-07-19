@@ -1,6 +1,7 @@
 package main
 
 import "core:math"
+import ripple "ripple"
 import rl "vendor:raylib"
 
 Static_Meter :: struct {
@@ -60,6 +61,9 @@ player_jump :: proc() {
 					consume_action(.Jump)
 				case .Airborne:
 					if has_charge(20) {
+						pos := get_relative_pos(entity.translation)
+						pos /= {SCREEN_WIDTH, SCREEN_HEIGHT}
+						ripple.add(pos, .Teal)
 						entity.velocity.y = -150
 						consume_action(.Jump)
 						spend_charge(20)

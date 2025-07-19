@@ -170,13 +170,6 @@ update :: proc() -> f32 {
 	player := entities[Entity_Tag.Player]
 	pos := get_relative_pos(player.translation)
 	pos /= {SCREEN_WIDTH, SCREEN_HEIGHT}
-	if (rl.IsKeyPressed(.E)) {
-		ripple.add(pos, 1)
-		ripple.add(pos, 2)
-	}
-	if (rl.IsKeyPressed(.Q)) {
-		ripple.add(pos, 0)
-	}
 
 	check_kill_player()
 	ripple.update()
@@ -191,7 +184,7 @@ check_kill_player :: proc() {
 
 
 	if check_killzone(level, player.translation) || player.translation.y > level.position.y + f32(level.height) {
-		ripple.add(pos, 1)
+		ripple.add(pos, .Red)
 
 		player.translation = get_spawn_point(level)
 		player.velocity = {0, 0}
