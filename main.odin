@@ -14,15 +14,21 @@ SCREEN_WIDTH :: 480
 SCREEN_HEIGHT :: 360
 TICK_RATE :: 1.0 / 200.0
 
+player: Player
 time: Time
 gamestate: GameState
 input_buffer: Input_Buffer
-entity_textures: [Entity_Tag]rl.Texture2D
+player_texture: rl.Texture2D
 ui_textures: [Ui_Texture_Tag]rl.Texture2D
-entities := make([dynamic]Entity, 0, 16)
 static_meter := Static_Meter {
 	max_charge = 100,
 	charge     = 0,
+}
+
+player_animations := [Animation_Tag]Animation {
+	.Idle = SingleFrame{idx = 0},
+	.Run = MultiFrame{start = 1, end = 3},
+	.Jump = SingleFrame{idx = 4},
 }
 tilesheet: rl.Texture
 
@@ -64,7 +70,7 @@ update_shader_uniforms :: proc() {
 main :: proc() {
 	rl.InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "KenneyJam")
 	defer rl.CloseWindow()
-	entity_textures = load_entity_textures()
+	player_texture = load_player_texture()
 	ui_textures = load_ui_textures()
 	tilesheet = rl.LoadTexture("assets/Tilemap/monochrome_tilemap_transparent.png")
 
@@ -76,7 +82,7 @@ main :: proc() {
 		gamestate.current_level = gamestate.levels[0]
 	}
 
-	append(&entities, make_player(get_spawn_point(gamestate.current_level)))
+	player = make_player(get_spawn_point(gamestate.current_level))
 
 	gamestate.render_surface = rl.LoadRenderTexture(SCREEN_WIDTH, SCREEN_HEIGHT)
 	gamestate.intermediate_surface = rl.LoadRenderTexture(SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -86,8 +92,7 @@ main :: proc() {
 		draw()
 		free_all(context.temp_allocator)
 	}
-	unload_textures()
-	delete(entities)
+	unload_player_texture()
 }
 
 get_relative_pos :: proc(pos: rl.Vector2) -> rl.Vector2 {
@@ -101,7 +106,7 @@ draw :: proc() {
 	rl.ClearBackground(rl.BLACK)
 	particles.draw(get_relative_pos)
 	draw_tiles(gamestate.current_level, tilesheet)
-	render_entities()
+	render_player()
 	rl.EndTextureMode()
 
 	rl.BeginTextureMode(gamestate.render_surface)
@@ -132,7 +137,7 @@ draw :: proc() {
 }
 
 update :: proc() -> f32 {
-	animate_entities()
+	animate_player()
 	if !time.started {
 		time.t = f32(rl.GetTime())
 		time.started = true
@@ -153,7 +158,7 @@ update :: proc() -> f32 {
 
 	level := gamestate.current_level
 
-	target_position := (entities[Entity_Tag.Player].snapshot - gamestate.camera_offset) / 20
+	target_position := (player.snapshot - gamestate.camera_offset) / 20
 	gamestate.camera_offset += target_position
 
 	// clamping to level in x axis
@@ -168,8 +173,6 @@ update :: proc() -> f32 {
 		math.min(level.position.y + f32(level.height) - (SCREEN_HEIGHT / 2), gamestate.camera_offset.y),
 	)
 
-
-	player := entities[Entity_Tag.Player]
 	pos := get_relative_pos(player.translation)
 	pos /= {SCREEN_WIDTH, SCREEN_HEIGHT}
 
