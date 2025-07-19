@@ -159,3 +159,20 @@ get_spawn_point :: proc(level: Level) -> rl.Vector2 {
 	assert(false)
 	return {0, 0}
 }
+
+check_killzone :: proc(level: Level, pos: rl.Vector2) -> bool {
+
+	pos_rect := rl.Rectangle{pos[0], pos[1], TILE_SIZE, TILE_SIZE}
+
+	for entity in level.entities {
+		#partial switch entity.type {
+		case .Killzone:
+			entity_position := entity.position + level.position
+			killzone_rect := rl.Rectangle{entity_position[0], entity_position[1], TILE_SIZE, TILE_SIZE}
+			if rl.CheckCollisionRecs(pos_rect, killzone_rect) {
+				return true
+			}
+		}
+	}
+	return false
+}

@@ -86,3 +86,20 @@ player_dash :: proc() {
 		}
 	}
 }
+
+check_kill_player :: proc() {
+	level := gamestate.current_level
+	player := &entities[Entity_Tag.Player]
+	pos := get_relative_pos(player.translation)
+	pos /= {SCREEN_WIDTH, SCREEN_HEIGHT}
+
+
+	if check_killzone(level, player.translation) || player.translation.y > level.position.y + f32(level.height) {
+		ripple.add(pos, 1)
+
+		player.translation = get_spawn_point(level)
+		player.velocity = {0, 0}
+		player.snapshot = player.translation
+
+	}
+}
