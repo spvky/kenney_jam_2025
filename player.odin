@@ -1,6 +1,7 @@
 package main
 
 import "core:math"
+import particles "particles"
 import ripple "ripple"
 import rl "vendor:raylib"
 
@@ -95,11 +96,17 @@ check_kill_player :: proc() {
 
 
 	if check_killzone(level, player.translation) || player.translation.y > level.position.y + f32(level.height) {
-		ripple.add(pos, 1)
+		ripple.add(pos, .Red)
 
 		player.translation = get_spawn_point(level)
 		player.velocity = {0, 0}
 		player.snapshot = player.translation
+
+		center_position := player.translation
+		particles.add({position = center_position, lifetime = 1, radius = 0.5, kind = .Ripple})
+		pos := get_relative_pos(center_position)
+		pos /= {SCREEN_WIDTH, SCREEN_HEIGHT}
+		ripple.add(pos, .Teal, 80)
 
 	}
 }
