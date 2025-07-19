@@ -16,6 +16,7 @@ time: Time
 gamestate: GameState
 input_buffer: Input_Buffer
 entity_textures: [Entity_Tag]rl.Texture2D
+ui_textures: [Ui_Texture_Tag]rl.Texture2D
 entities := make([dynamic]Entity, 0, 16)
 platforms := [?]Platform{{translation = {70, 90}, size = {30, 5}}}
 static_meter := Static_Meter {
@@ -42,7 +43,8 @@ Vec2 :: [2]f32
 main :: proc() {
 	rl.InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "KenneyJam")
 	defer rl.CloseWindow()
-	entity_textures = load_textures()
+	entity_textures = load_entity_textures()
+	ui_textures = load_ui_textures()
 	tilesheet = rl.LoadTexture("assets/Tilemap/monochrome_tilemap_transparent.png")
 	append(&entities, make_player())
 

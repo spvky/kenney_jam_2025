@@ -64,7 +64,7 @@ make_player :: proc() -> Entity {
 	}
 }
 
-load_textures :: proc() -> [Entity_Tag]rl.Texture2D {
+load_entity_textures :: proc() -> [Entity_Tag]rl.Texture2D {
 	player_tex := rl.LoadTexture("assets/textures/player.png")
 	return [Entity_Tag]rl.Texture2D{.Player = player_tex}
 }

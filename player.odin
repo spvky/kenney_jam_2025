@@ -33,15 +33,6 @@ handle_static_meter :: proc(frametime: f32) {
 	displayed_charge = math.lerp(displayed_charge, charge, frametime * 5)
 }
 
-draw_static_meter :: proc() {
-	using static_meter
-
-	frametime := rl.GetFrameTime()
-	handle_static_meter(frametime)
-	rl.DrawRectanglePro({x = 10, y = 20, width = 16, height = 104}, {0, 0}, 0, rl.WHITE)
-	rl.DrawRectanglePro({x = 18, y = 122, width = 12, height = charge}, {6, 0}, 180, rl.BLUE)
-}
-
 set_player_movement_delta :: proc() {
 	for &entity in entities {
 		delta: f32
