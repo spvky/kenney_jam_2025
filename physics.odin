@@ -19,6 +19,7 @@ physics_step :: proc() {
 	entity_platform_collision()
 	apply_gravity()
 	player_jump()
+	player_dash()
 	manage_entity_velocity()
 	simulate_dynamics()
 }
@@ -43,7 +44,12 @@ apply_gravity :: proc() {
 
 manage_entity_velocity :: proc() {
 	for &entity in entities {
-		max, acceleration, deceleration := entity.speed.max, entity.speed.acceleration, entity.speed.deceleration
+		max, acceleration, deceleration, base_max, base_acceleration :=
+			entity.speed.max,
+			entity.speed.acceleration,
+			entity.speed.deceleration,
+			entity.speed.base_max,
+			entity.speed.base_acceleration
 		if entity.x_delta != 0 {
 			if entity.x_delta * entity.velocity.x < max {
 				entity.velocity.x += TICK_RATE * acceleration * entity.x_delta
@@ -53,6 +59,18 @@ manage_entity_velocity :: proc() {
 			entity.velocity.x = entity.velocity.x * factor
 			if math.abs(entity.velocity.x) < 0.3 {
 				entity.velocity.x = 0
+			}
+		}
+		if max > entity.speed.base_max {
+			entity.speed.max = l.lerp(max, base_max, TICK_RATE)
+			if entity.speed.max < base_max {
+				entity.speed.max = base_max
+			}
+		}
+		if acceleration > entity.speed.base_acceleration {
+			entity.speed.acceleration = l.lerp(acceleration, base_acceleration, TICK_RATE)
+			if entity.speed.acceleration < base_acceleration {
+				entity.speed.acceleration = base_acceleration
 			}
 		}
 	}

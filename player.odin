@@ -78,3 +78,16 @@ player_jump :: proc() {
 		}
 	}
 }
+
+player_dash :: proc() {
+	for &entity in entities {
+		if entity.tag == .Player {
+			if entity.state == .Grounded && is_action_buffered(.Dash) && has_charge(30) {
+				entity.speed.max = 150
+				entity.speed.acceleration = 450
+				consume_action(.Dash)
+				spend_charge(30)
+			}
+		}
+	}
+}

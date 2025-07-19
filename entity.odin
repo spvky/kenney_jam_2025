@@ -39,6 +39,7 @@ Animation_Tag :: enum {
 }
 
 Speed :: struct {
+	base_max:          f32,
 	max:               f32,
 	base_acceleration: f32,
 	acceleration:      f32,
@@ -59,7 +60,7 @@ make_player :: proc() -> Entity {
 		},
 		facing = 1,
 		translation = {70, 50},
-		speed = Speed{max = 50, acceleration = 275, deceleration = 0.025},
+		speed = Speed{base_max = 50, max = 50, base_acceleration = 275, acceleration = 275, deceleration = 0.025},
 	}
 }
 
@@ -79,12 +80,10 @@ animate_entities :: proc() {
 	frametime := rl.GetFrameTime()
 	for &entity in entities {
 		entity.animation_player.frametime += frametime
-		if entity.animation_player.frametime >
-		   entity.animation_player.frame_length {
+		if entity.animation_player.frametime > entity.animation_player.frame_length {
 			entity.animation_player.anim_index += 1
 			entity.animation_player.frametime = 0
-			if entity.animation_player.anim_index >
-			   entity.animation_player.anim_length {
+			if entity.animation_player.anim_index > entity.animation_player.anim_length {
 				entity.animation_player.anim_index = 1
 			}
 		}
@@ -101,11 +100,6 @@ render_entities :: proc() {
 			height = 16,
 		}
 		offset := Vec2{-8, -8}
-		rl.DrawTextureRec(
-			texture,
-			texture_rec,
-			get_relative_pos(entity.snapshot + offset),
-			rl.WHITE,
-		)
+		rl.DrawTextureRec(texture, texture_rec, get_relative_pos(entity.snapshot + offset), rl.WHITE)
 	}
 }

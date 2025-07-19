@@ -12,6 +12,7 @@ Buffered_Input :: union {
 
 Input_Action :: enum {
 	Jump,
+	Dash,
 }
 
 update_buffer :: proc() {
@@ -51,5 +52,6 @@ input :: proc() {
 	update_buffer()
 	// Tracking raw input in the input buffer
 	if rl.IsKeyPressed(.SPACE) do buffer_action(.Jump)
+	if rl.IsKeyPressed(.E) do buffer_action(.Dash)
 	set_player_movement_delta()
 }
