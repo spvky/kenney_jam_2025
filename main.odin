@@ -206,7 +206,6 @@ update :: proc() -> f32 {
 		for time.simulation_time >= TICK_RATE {
 			// Physics stuff
 			physics_step()
-			//
 			time.simulation_time -= TICK_RATE
 		}
 		set_player_animation()
@@ -227,9 +226,6 @@ update :: proc() -> f32 {
 			math.min(level.position.y + f32(level.height) - (SCREEN_HEIGHT / 2), gamestate.camera_offset.y),
 		)
 
-		pos := get_relative_pos(player.translation)
-		pos /= {SCREEN_WIDTH, SCREEN_HEIGHT}
-
 		for tile in level.tiles {
 			if tile_has_property(tile, .LeafEmitter) {
 				if abs(math.sin(f32(rl.GetTime() * 3) + tile.position.x)) < 0.002 {
@@ -239,15 +235,7 @@ update :: proc() -> f32 {
 			}
 		}
 
-		if rl.IsKeyPressed(.Q) {
-
-			center_position := player.translation
-			particles.add({position = center_position, lifetime = 1, radius = 0.5, kind = .Ripple})
-			transition.start(nil, gamestate.render_surface.texture)
-		}
-
 		if gamestate.transitioning {
-
 			if transition.transition.progress == 1 {
 				gamestate.current_level += 1
 				transition.start(nil, gamestate.render_surface.texture)

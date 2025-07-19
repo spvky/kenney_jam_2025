@@ -169,11 +169,17 @@ get_spawn_point :: proc(level: Level) -> rl.Vector2 {
 }
 
 
-spawn_player :: proc(pos: rl.Vector2) {
-	player.translation = pos
+spawn_player :: proc(spawn_position: rl.Vector2) {
+	player.translation = spawn_position
 	player.velocity = {0, 0}
 	player.snapshot = player.translation
 	spend_charge(static_meter.charge)
+
+	center_position := player.translation
+	pos := get_relative_pos(center_position)
+	pos /= {SCREEN_WIDTH, SCREEN_HEIGHT}
+	ripple.add(pos, .Teal, 80)
+	particles.add({position = center_position, lifetime = 1, radius = 0.5, kind = .Ripple})
 }
 
 kill_player :: proc(level: Level) {
@@ -184,12 +190,6 @@ kill_player :: proc(level: Level) {
 	ripple.add(pos, .Red)
 
 	spawn_player(get_spawn_point(level))
-
-	center_position := player.translation
-	particles.add({position = center_position, lifetime = 1, radius = 0.5, kind = .Ripple})
-	pos = get_relative_pos(center_position)
-	pos /= {SCREEN_WIDTH, SCREEN_HEIGHT}
-	ripple.add(pos, .Teal, 80)
 }
 
 

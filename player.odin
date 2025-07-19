@@ -67,6 +67,9 @@ Static_Meter :: struct {
 	displayed_charge: f32,
 }
 
+
+COST :: 25
+
 make_player :: proc(spawn_point: rl.Vector2) -> Player {
 	return Player {
 		state = .Grounded,
@@ -212,13 +215,14 @@ player_jump :: proc() {
 				player.velocity.y = -125
 				consume_action(.Jump)
 			} else {
-				if has_charge(25) {
+				if has_charge(COST) {
 					pos := get_relative_pos(player.translation)
 					pos /= {SCREEN_WIDTH, SCREEN_HEIGHT}
 					ripple.add(pos, .Teal)
+					particles.add({position = player.translation, lifetime = 1, radius = 0.5, kind = .Ripple})
 					player.velocity.y = -175
 					consume_action(.Jump)
-					spend_charge(25)
+					spend_charge(COST)
 				}
 			}
 		}
@@ -230,13 +234,13 @@ player_land :: proc() {
 }
 
 player_dash :: proc() {
-	if player.state == .Grounded && is_action_buffered(.Dash) && has_charge(25) {
+	if player.state == .Grounded && is_action_buffered(.Dash) && has_charge(COST) {
 		player.speed.max = 150
 		player.speed.acceleration = 450
 		pos := get_relative_pos(player.translation)
 		pos /= {SCREEN_WIDTH, SCREEN_HEIGHT}
 		ripple.add(pos, .Teal)
 		consume_action(.Dash)
-		spend_charge(25)
+		spend_charge(COST)
 	}
 }

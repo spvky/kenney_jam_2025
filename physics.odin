@@ -128,7 +128,7 @@ player_platform_collision :: proc() {
 		nearest_feet := project_point_onto_position(tile.position + level.position, feet_position)
 		if l.distance(feet_position, nearest_feet) < 0.5 {
 			if tile_has_property(tile, .Static_Gen) {
-				add_charge(TICK_RATE * (math.abs(player.velocity.x) / 5))
+				add_charge(TICK_RATE * (math.abs(player.velocity.x * 1.2)))
 			}
 			ground_hits += 1
 		}
