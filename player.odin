@@ -212,13 +212,13 @@ player_jump :: proc() {
 				player.velocity.y = -125
 				consume_action(.Jump)
 			} else {
-				if has_charge(20) {
+				if has_charge(25) {
 					pos := get_relative_pos(player.translation)
 					pos /= {SCREEN_WIDTH, SCREEN_HEIGHT}
 					ripple.add(pos, .Teal)
 					player.velocity.y = -175
 					consume_action(.Jump)
-					spend_charge(20)
+					spend_charge(25)
 				}
 			}
 		}
@@ -230,14 +230,14 @@ player_land :: proc() {
 }
 
 player_dash :: proc() {
-	if player.state == .Grounded && is_action_buffered(.Dash) && has_charge(30) {
+	if player.state == .Grounded && is_action_buffered(.Dash) && has_charge(25) {
 		player.speed.max = 150
 		player.speed.acceleration = 450
 		pos := get_relative_pos(player.translation)
 		pos /= {SCREEN_WIDTH, SCREEN_HEIGHT}
 		ripple.add(pos, .Teal)
 		consume_action(.Dash)
-		spend_charge(30)
+		spend_charge(25)
 	}
 }
 
