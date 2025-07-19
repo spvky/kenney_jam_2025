@@ -33,6 +33,12 @@ apply_gravity :: proc() {
 	switch player.state {
 	case .Airborne:
 		player.velocity.y += 250 * TICK_RATE
+		if player.coyote_time > 0 {
+			player.coyote_time -= TICK_RATE
+		}
+		if player.coyote_time < 0 {
+			player.coyote_time = 0
+		}
 	case .Grounded:
 		player.velocity.y = 0
 	}
@@ -131,6 +137,7 @@ player_platform_collision :: proc() {
 
 	if ground_hits > 0 {
 		player.state = .Grounded
+		player_land()
 	} else {
 		player.state = .Airborne
 	}
