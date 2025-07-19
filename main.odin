@@ -3,6 +3,7 @@ package main
 import fmt "core:fmt"
 import math "core:math"
 import ldtk "ldtk"
+import particles "particles"
 import ripple "ripple"
 import rl "vendor:raylib"
 
@@ -98,6 +99,7 @@ draw :: proc() {
 
 	rl.BeginTextureMode(gamestate.intermediate_surface)
 	rl.ClearBackground(rl.BLACK)
+	particles.draw(get_relative_pos)
 	draw_tiles(gamestate.current_level, tilesheet)
 	render_entities()
 	rl.EndTextureMode()
@@ -171,41 +173,23 @@ update :: proc() -> f32 {
 	pos := get_relative_pos(player.translation)
 	pos /= {SCREEN_WIDTH, SCREEN_HEIGHT}
 
-	check_kill_player()
-	ripple.update()
-	return time.simulation_time / TICK_RATE
-}
-
-check_kill_player :: proc() {
-	level := gamestate.current_level
-	player := &entities[Entity_Tag.Player]
-	pos := get_relative_pos(player.translation)
-	pos /= {SCREEN_WIDTH, SCREEN_HEIGHT}
-
-
-	if check_killzone(level, player.translation) || player.translation.y > level.position.y + f32(level.height) {
-		ripple.add(pos, .Red)
-
-		player.translation = get_spawn_point(level)
-		player.velocity = {0, 0}
-		player.snapshot = player.translation
-
-	}
-}
-
-check_killzone :: proc(level: Level, pos: rl.Vector2) -> bool {
-
-	pos_rect := rl.Rectangle{pos[0], pos[1], TILE_SIZE, TILE_SIZE}
-
-	for entity in level.entities {
-		#partial switch entity.type {
-		case .Killzone:
-			entity_position := entity.position + level.position
-			killzone_rect := rl.Rectangle{entity_position[0], entity_position[1], TILE_SIZE, TILE_SIZE}
-			if rl.CheckCollisionRecs(pos_rect, killzone_rect) {
-				return true
+	for tile in level.tiles {
+		if tile_has_property(tile, .LeafEmitter) {
+			if abs(math.sin(f32(rl.GetTime() * 3) + tile.position.x)) < 0.002 {
+				center_position := tile.position + ({TILE_SIZE, TILE_SIZE} / 2)
+				particles.add({position = center_position, lifetime = 15, radius = 0.5, kind = .Leaf})
 			}
 		}
 	}
-	return false
+
+	if rl.IsKeyPressed(.Q) {
+
+		center_position := player.translation
+		particles.add({position = center_position, lifetime = 1, radius = 0.5, kind = .Ripple})
+	}
+
+	check_kill_player()
+	ripple.update()
+	particles.update()
+	return time.simulation_time / TICK_RATE
 }
