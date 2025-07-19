@@ -91,6 +91,8 @@ unload_player_texture :: proc() {
 }
 
 
+import "core:fmt"
+
 animate_player :: proc() {
 	frametime := rl.GetFrameTime()
 	using player.animation_player
@@ -102,9 +104,10 @@ animate_player :: proc() {
 		if current_time > frame_length {
 			current_time = 0
 			new_frame := current_frame + 1
-			if current_frame > ca.end {
-				current_frame = ca.start
+			if new_frame > ca.end {
+				new_frame = ca.start
 			}
+			player.animation_player.current_frame = new_frame
 		}
 	}
 }
@@ -163,7 +166,36 @@ set_player_movement_delta :: proc() {
 	}
 }
 
+start_of_animation :: proc(animation: Animation) -> int {
+	switch a in animation {
+	case SingleFrame:
+		return a.idx
+	case MultiFrame:
+		return a.start
+	}
+	return 0
+}
+
 set_player_animation :: proc() {
+	switch player.state {
+	case .Airborne:
+		if player.animation_player.current_animation != player_animations[.Jump] {
+			player.animation_player.current_animation = player_animations[.Jump]
+			player.animation_player.current_frame = start_of_animation(player_animations[.Jump])
+		}
+	case .Grounded:
+		if math.abs(player.velocity.x) < 0.5 {
+			if player.animation_player.current_animation != player_animations[.Idle] {
+				player.animation_player.current_animation = player_animations[.Idle]
+				player.animation_player.current_frame = start_of_animation(player_animations[.Idle])
+			}
+		} else {
+			if player.animation_player.current_animation != player_animations[.Run] {
+				player.animation_player.current_animation = player_animations[.Run]
+				player.animation_player.current_frame = start_of_animation(player_animations[.Run])
+			}
+		}
+	}
 }
 
 player_jump :: proc() {

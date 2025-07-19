@@ -155,7 +155,7 @@ update :: proc() -> f32 {
 		//
 		time.simulation_time -= TICK_RATE
 	}
-
+	set_player_animation()
 	level := gamestate.current_level
 
 	target_position := (player.snapshot - gamestate.camera_offset) / 20
