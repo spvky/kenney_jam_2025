@@ -34,8 +34,9 @@ Time :: struct {
 
 GameState :: struct {
 	render_surface: rl.RenderTexture,
-	level:          Level,
+	levels:         [dynamic]Level,
 	camera_offset:  rl.Vector2,
+	current_level:  Level,
 }
 
 Vec2 :: [2]f32
@@ -50,13 +51,8 @@ main :: proc() {
 
 
 	if project, ok := ldtk.load_from_file("assets/level.ldtk", context.temp_allocator).?; ok {
-		// TEMPORARY
-		level := project.levels[0]
-
-		gamestate.level.tiles = load_tiles(level, project.defs.tilesets[0])
-		gamestate.level.width = level.px_width
-		gamestate.level.height = level.px_height
-		gamestate.level.position = {f32(level.world_x), f32(level.world_y)}
+		gamestate.levels = get_all_levels(project)
+		gamestate.current_level = gamestate.levels[0]
 	}
 
 	gamestate.render_surface = rl.LoadRenderTexture(SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -77,7 +73,7 @@ get_relative_pos :: proc(pos: rl.Vector2) -> rl.Vector2 {
 draw :: proc() {
 	rl.BeginTextureMode(gamestate.render_surface)
 	rl.ClearBackground(rl.BLACK)
-	draw_tiles(gamestate.level, tilesheet)
+	draw_tiles(gamestate.current_level, tilesheet)
 	render_entities()
 	draw_static_meter()
 	rl.EndTextureMode()
@@ -114,7 +110,7 @@ update :: proc() -> f32 {
 		time.simulation_time -= TICK_RATE
 	}
 
-	level := gamestate.level
+	level := gamestate.current_level
 
 	target_position := (entities[Entity_Tag.Player].snapshot - gamestate.camera_offset) / 20
 	gamestate.camera_offset += target_position

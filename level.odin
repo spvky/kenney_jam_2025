@@ -26,9 +26,7 @@ Tile_Property :: enum {
 	Static_Gen,
 }
 
-properties_from_strings :: proc(
-	properties: []string,
-) -> bit_set[Tile_Property] {
+properties_from_strings :: proc(properties: []string) -> bit_set[Tile_Property] {
 	property_set: bit_set[Tile_Property]
 	for value in properties {
 		switch value {
@@ -47,11 +45,7 @@ tile_has_property :: proc(tile: Tile, property: Tile_Property) -> bool {
 	return property in tile.properties
 }
 
-add_tile :: proc(
-	tiles: ^[dynamic]Tile,
-	tileset_definition: ldtk.Tileset_Definition,
-	tile: ldtk.Tile_Instance,
-) {
+add_tile :: proc(tiles: ^[dynamic]Tile, tileset_definition: ldtk.Tileset_Definition, tile: ldtk.Tile_Instance) {
 	raw_properties: [dynamic]string
 	for def in tileset_definition.enum_tags {
 		found := false
@@ -80,10 +74,7 @@ add_tile :: proc(
 
 }
 
-load_tiles :: proc(
-	level: ldtk.Level,
-	tileset_definition: ldtk.Tileset_Definition,
-) -> [dynamic]Tile {
+load_level :: proc(level: ldtk.Level, tileset_definition: ldtk.Tileset_Definition) -> Level {
 	tiles: [dynamic]Tile
 
 	for layer in level.layer_instances {
@@ -99,16 +90,27 @@ load_tiles :: proc(
 			}
 		}
 	}
-	return tiles
+	return {
+		tiles = tiles,
+		height = level.px_height,
+		width = level.px_width,
+		position = {f32(level.world_x), f32(level.world_y)},
+	}
 }
 
 draw_tiles :: proc(level: Level, tilesheet: rl.Texture) {
 	for tile in level.tiles {
-		rl.DrawTextureRec(
-			tilesheet,
-			tile.draw_coords,
-			get_relative_pos(tile.position + level.position),
-			rl.WHITE,
-		)
+		rl.DrawTextureRec(tilesheet, tile.draw_coords, get_relative_pos(tile.position + level.position), rl.WHITE)
 	}
+}
+
+get_all_levels :: proc(project: ldtk.Project) -> [dynamic]Level {
+
+	levels: [dynamic]Level
+
+	for level in project.levels {
+
+		append(&levels, load_level(level, project.defs.tilesets[0]))
+	}
+	return levels
 }

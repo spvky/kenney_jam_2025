@@ -97,10 +97,10 @@ entity_platform_collision :: proc() {
 	for &entity in entities {
 		collisions := make([dynamic]Collision_Data, 0, 8, allocator = context.temp_allocator)
 
-		for tile in gamestate.level.tiles {
+		for tile in gamestate.current_level.tiles {
 			if !tile_has_property(tile, .Collision) {continue}
 			nearest_platform := project_point_onto_position(
-				tile.position + gamestate.level.position,
+				tile.position + gamestate.current_level.position,
 				entity.translation,
 			)
 			if l.distance(entity.translation, nearest_platform) < entity.radius {
@@ -123,11 +123,14 @@ entity_platform_collision :: proc() {
 
 		ground_hits: int
 
-		for tile in gamestate.level.tiles {
+		for tile in gamestate.current_level.tiles {
 			if !tile_has_property(tile, .Collision) {continue}
 
 			feet_position := entity.translation + Vec2{0, entity.radius + 2}
-			nearest_feet := project_point_onto_position(tile.position + gamestate.level.position, feet_position)
+			nearest_feet := project_point_onto_position(
+				tile.position + gamestate.current_level.position,
+				feet_position,
+			)
 			if l.distance(feet_position, nearest_feet) < 0.5 {
 				if tile_has_property(tile, .Static_Gen) {
 					add_charge(TICK_RATE * (math.abs(entity.velocity.x) / 5))
