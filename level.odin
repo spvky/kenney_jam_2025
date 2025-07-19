@@ -1,6 +1,9 @@
 package main
 import fmt "core:fmt"
 import ldtk "ldtk"
+import particles "particles"
+import ripple "ripple"
+import transition "transition"
 import rl "vendor:raylib"
 
 TILE_SIZE :: 16
@@ -22,12 +25,14 @@ Tile :: struct {
 }
 
 Level_Entity :: struct {
-	type:     enum {
-		Killzone,
-		Next_level,
-		Player_spawn,
-	},
+	type:     Entity_Type,
 	position: rl.Vector2,
+}
+
+Entity_Type :: enum {
+	Killzone,
+	Next_level,
+	Player_spawn,
 }
 
 Tile_Property :: enum {
@@ -101,6 +106,7 @@ add_entity :: proc(entities: ^[dynamic]Level_Entity, entity_instance: ldtk.Entit
 		entity.type = .Next_level
 	}
 
+	fmt.printfln("added entity of type: %v", entity.type)
 	append(entities, entity)
 }
 
@@ -163,24 +169,75 @@ get_spawn_point :: proc(level: Level) -> rl.Vector2 {
 	return {0, 0}
 }
 
-check_killzone :: proc(level: Level, pos: rl.Vector2) -> bool {
+
+kill_player :: proc(level: Level) {
+
+	pos := get_relative_pos(player.translation)
+	pos /= {SCREEN_WIDTH, SCREEN_HEIGHT}
+
+	ripple.add(pos, .Red)
+
+	player.translation = get_spawn_point(level)
+	player.velocity = {0, 0}
+	player.snapshot = player.translation
+
+	center_position := player.translation
+	particles.add({position = center_position, lifetime = 1, radius = 0.5, kind = .Ripple})
+	pos = get_relative_pos(center_position)
+	pos /= {SCREEN_WIDTH, SCREEN_HEIGHT}
+	ripple.add(pos, .Teal, 80)
+}
+
+
+handle_triggers :: proc() {
+	level := gamestate.current_level
+	pos := player.translation
+
+
+	if pos.y > (f32(level.height) + level.position.y) {
+		fmt.println("player is oob")
+		kill_player(level)
+	}
+
+	if entity_type, ok := check_triggers(level, pos).?; ok {
+
+		#partial switch entity_type {
+		case .Killzone:
+			kill_player(level)
+
+		//case .Next_level:
+		//switch level
+
+		}
+	}
+}
+
+check_triggers :: proc(level: Level, pos: rl.Vector2) -> Maybe(Entity_Type) {
 
 	pos_rect := rl.Rectangle{pos[0], pos[1], TILE_SIZE, TILE_SIZE}
 
 	for entity in level.entities {
+
+		entity_position := entity.position + level.position
+
 		#partial switch entity.type {
 		case .Killzone:
-			entity_position := entity.position + level.position
 			killzone_rect := rl.Rectangle{entity_position[0], entity_position[1], TILE_SIZE, TILE_SIZE}
 			if rl.CheckCollisionRecs(pos_rect, killzone_rect) {
-				return true
+				return .Killzone
+			}
+		case .Next_level:
+			next_rect := rl.Rectangle{entity_position[0], entity_position[1], TILE_SIZE, TILE_SIZE}
+			if rl.CheckCollisionRecs(pos_rect, next_rect) {
+				return .Next_level
 			}
 		}
 	}
-	return false
+	return nil
 }
 
-switch_level :: proc(current_index: int) {
+
+switch_level :: proc() {
 
 
 }

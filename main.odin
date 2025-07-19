@@ -197,7 +197,7 @@ update :: proc() -> f32 {
 	}
 
 	transition.update()
-	check_kill_player()
+	handle_triggers()
 	ripple.update()
 	particles.update()
 	return time.simulation_time / TICK_RATE
