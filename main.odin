@@ -52,12 +52,13 @@ MainMenuContext :: struct {
 GameState :: struct {
 	render_surface:       rl.RenderTexture,
 	levels:               [dynamic]Level,
-	current_level:        Level,
+	current_level:        int,
 	intermediate_surface: rl.RenderTexture,
 	camera_offset:        rl.Vector2,
 	vfx_shader:           rl.Shader,
 	state:                GameStateEnum,
 	menu_context:         MainMenuContext,
+	transitioning:        bool,
 }
 
 Vec2 :: [2]f32
@@ -94,10 +95,10 @@ main :: proc() {
 
 	if project, ok := ldtk.load_from_file("assets/level.ldtk", context.temp_allocator).?; ok {
 		gamestate.levels = get_all_levels(project)
-		gamestate.current_level = gamestate.levels[0]
+		gamestate.current_level = 0
 	}
 
-	player = make_player(get_spawn_point(gamestate.current_level))
+	player = make_player(get_spawn_point(gamestate.levels[gamestate.current_level]))
 
 	gamestate.render_surface = rl.LoadRenderTexture(SCREEN_WIDTH, SCREEN_HEIGHT)
 	gamestate.intermediate_surface = rl.LoadRenderTexture(SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -122,7 +123,7 @@ draw :: proc() {
 		rl.BeginTextureMode(gamestate.intermediate_surface)
 		rl.ClearBackground(rl.BLACK)
 		particles.draw(get_relative_pos)
-		draw_tiles(gamestate.current_level, tilesheet)
+		draw_tiles(gamestate.levels[gamestate.current_level], tilesheet)
 		render_player()
 		rl.EndTextureMode()
 
@@ -209,7 +210,7 @@ update :: proc() -> f32 {
 			time.simulation_time -= TICK_RATE
 		}
 		set_player_animation()
-		level := gamestate.current_level
+		level := gamestate.levels[gamestate.current_level]
 
 		target_position := (player.snapshot - gamestate.camera_offset) / 20
 		gamestate.camera_offset += target_position
@@ -243,6 +244,17 @@ update :: proc() -> f32 {
 			center_position := player.translation
 			particles.add({position = center_position, lifetime = 1, radius = 0.5, kind = .Ripple})
 			transition.start(nil, gamestate.render_surface.texture)
+		}
+
+		if gamestate.transitioning {
+
+			if transition.transition.progress == 1 {
+				gamestate.current_level += 1
+				transition.start(nil, gamestate.render_surface.texture)
+				spawn_player(get_spawn_point(gamestate.levels[gamestate.current_level]))
+				gamestate.transitioning = false
+
+			}
 		}
 
 		transition.update()

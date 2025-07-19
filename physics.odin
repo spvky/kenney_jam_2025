@@ -96,12 +96,11 @@ player_platform_collision :: proc() {
 
 	collisions := make([dynamic]Collision_Data, 0, 8, allocator = context.temp_allocator)
 
-	for tile in gamestate.current_level.tiles {
+	level := gamestate.levels[gamestate.current_level]
+
+	for tile in level.tiles {
 		if !tile_has_property(tile, .Collision) {continue}
-		nearest_platform := project_point_onto_position(
-			tile.position + gamestate.current_level.position,
-			player.translation,
-		)
+		nearest_platform := project_point_onto_position(tile.position + level.position, player.translation)
 		if l.distance(player.translation, nearest_platform) < player.radius {
 			calculate_collision(&collisions, player.translation, nearest_platform, player.radius)
 		}
@@ -122,11 +121,11 @@ player_platform_collision :: proc() {
 
 	ground_hits: int
 
-	for tile in gamestate.current_level.tiles {
+	for tile in level.tiles {
 		if !tile_has_property(tile, .Collision) {continue}
 
 		feet_position := player.translation + Vec2{0, player.radius + 2}
-		nearest_feet := project_point_onto_position(tile.position + gamestate.current_level.position, feet_position)
+		nearest_feet := project_point_onto_position(tile.position + level.position, feet_position)
 		if l.distance(feet_position, nearest_feet) < 0.5 {
 			if tile_has_property(tile, .Static_Gen) {
 				add_charge(TICK_RATE * (math.abs(player.velocity.x) / 5))

@@ -106,7 +106,6 @@ add_entity :: proc(entities: ^[dynamic]Level_Entity, entity_instance: ldtk.Entit
 		entity.type = .Next_level
 	}
 
-	fmt.printfln("added entity of type: %v", entity.type)
 	append(entities, entity)
 }
 
@@ -162,13 +161,20 @@ get_all_levels :: proc(project: ldtk.Project) -> [dynamic]Level {
 get_spawn_point :: proc(level: Level) -> rl.Vector2 {
 	for entity in level.entities {
 		if entity.type == .Player_spawn {
-			return entity.position
+			return entity.position + level.position
 		}
 	}
 	assert(false)
 	return {0, 0}
 }
 
+
+spawn_player :: proc(pos: rl.Vector2) {
+	player.translation = pos
+	player.velocity = {0, 0}
+	player.snapshot = player.translation
+	spend_charge(static_meter.charge)
+}
 
 kill_player :: proc(level: Level) {
 
@@ -177,9 +183,7 @@ kill_player :: proc(level: Level) {
 
 	ripple.add(pos, .Red)
 
-	player.translation = get_spawn_point(level)
-	player.velocity = {0, 0}
-	player.snapshot = player.translation
+	spawn_player(get_spawn_point(level))
 
 	center_position := player.translation
 	particles.add({position = center_position, lifetime = 1, radius = 0.5, kind = .Ripple})
@@ -190,12 +194,11 @@ kill_player :: proc(level: Level) {
 
 
 handle_triggers :: proc() {
-	level := gamestate.current_level
+	level := gamestate.levels[gamestate.current_level]
 	pos := player.translation
 
 
 	if pos.y > (f32(level.height) + level.position.y) {
-		fmt.println("player is oob")
 		kill_player(level)
 	}
 
@@ -205,8 +208,10 @@ handle_triggers :: proc() {
 		case .Killzone:
 			kill_player(level)
 
-		//case .Next_level:
-		//switch level
+		case .Next_level:
+			transition.start(gamestate.render_surface.texture, nil)
+			gamestate.transitioning = true
+
 
 		}
 	}
