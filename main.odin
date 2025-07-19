@@ -5,8 +5,8 @@ import math "core:math"
 import ldtk "ldtk"
 import particles "particles"
 import ripple "ripple"
+import transition "transition"
 import rl "vendor:raylib"
-
 WINDOW_WIDTH :: 1600
 WINDOW_HEIGHT :: 900
 
@@ -70,7 +70,10 @@ update_shader_uniforms :: proc() {
 main :: proc() {
 	rl.InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "KenneyJam")
 	defer rl.CloseWindow()
+
 	player_texture = load_player_texture()
+	transition.init(SCREEN_WIDTH, SCREEN_HEIGHT)
+
 	ui_textures = load_ui_textures()
 	tilesheet = rl.LoadTexture("assets/Tilemap/monochrome_tilemap_transparent.png")
 
@@ -122,6 +125,7 @@ draw :: proc() {
 	rl.EndShaderMode()
 
 	draw_static_meter()
+	transition.draw()
 	rl.EndTextureMode()
 
 	rl.BeginDrawing()
@@ -189,8 +193,10 @@ update :: proc() -> f32 {
 
 		center_position := player.translation
 		particles.add({position = center_position, lifetime = 1, radius = 0.5, kind = .Ripple})
+		transition.start(nil, gamestate.render_surface.texture)
 	}
 
+	transition.update()
 	check_kill_player()
 	ripple.update()
 	particles.update()
