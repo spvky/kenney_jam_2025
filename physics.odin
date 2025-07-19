@@ -32,7 +32,7 @@ simulate_dynamics :: proc() {
 apply_gravity :: proc() {
 	switch player.state {
 	case .Airborne:
-		player.velocity.y += 200 * TICK_RATE
+		player.velocity.y += 250 * TICK_RATE
 	case .Grounded:
 		player.velocity.y = 0
 	}

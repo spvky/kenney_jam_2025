@@ -202,14 +202,14 @@ player_jump :: proc() {
 	if is_action_buffered(.Jump) {
 		#partial switch player.state {
 		case .Grounded:
-			player.velocity.y = -100
+			player.velocity.y = -125
 			consume_action(.Jump)
 		case .Airborne:
 			if has_charge(20) {
 				pos := get_relative_pos(player.translation)
 				pos /= {SCREEN_WIDTH, SCREEN_HEIGHT}
 				ripple.add(pos, .Teal)
-				player.velocity.y = -150
+				player.velocity.y = -175
 				consume_action(.Jump)
 				spend_charge(20)
 			}
