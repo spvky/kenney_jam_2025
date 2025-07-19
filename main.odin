@@ -3,6 +3,7 @@ package main
 import fmt "core:fmt"
 import math "core:math"
 import ldtk "ldtk"
+import ripple "ripple"
 import rl "vendor:raylib"
 
 WINDOW_WIDTH :: 1600
@@ -18,7 +19,6 @@ input_buffer: Input_Buffer
 entity_textures: [Entity_Tag]rl.Texture2D
 ui_textures: [Ui_Texture_Tag]rl.Texture2D
 entities := make([dynamic]Entity, 0, 16)
-platforms := [?]Platform{{translation = {70, 90}, size = {30, 5}}}
 static_meter := Static_Meter {
 	max_charge = 100,
 	charge     = 0,
@@ -33,13 +33,32 @@ Time :: struct {
 }
 
 GameState :: struct {
-	render_surface: rl.RenderTexture,
-	levels:         [dynamic]Level,
-	camera_offset:  rl.Vector2,
-	current_level:  Level,
+	render_surface:       rl.RenderTexture,
+	levels:               [dynamic]Level,
+	current_level:        Level,
+	intermediate_surface: rl.RenderTexture,
+	camera_offset:        rl.Vector2,
+	vfx_shader:           rl.Shader,
 }
 
 Vec2 :: [2]f32
+
+
+update_shader_uniforms :: proc() {
+	shader := gamestate.vfx_shader
+	width := SCREEN_WIDTH
+	height := SCREEN_HEIGHT
+	rl.SetShaderValue(shader, rl.GetShaderLocation(shader, "u_tex_width"), &width, .INT)
+	rl.SetShaderValue(shader, rl.GetShaderLocation(shader, "u_tex_height"), &height, .INT)
+
+	rl.SetShaderValue(shader, rl.GetShaderLocation(shader, "u_camera_offset_x"), &gamestate.camera_offset.x, .FLOAT)
+	rl.SetShaderValue(shader, rl.GetShaderLocation(shader, "u_camera_offset_y"), &gamestate.camera_offset.y, .FLOAT)
+
+	rl.SetShaderValue(shader, rl.GetShaderLocation(shader, "u_time"), &time, .FLOAT)
+
+	ripple.set_shader_uniforms(shader)
+
+}
 
 main :: proc() {
 	rl.InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "KenneyJam")
@@ -47,6 +66,8 @@ main :: proc() {
 	entity_textures = load_entity_textures()
 	ui_textures = load_ui_textures()
 	tilesheet = rl.LoadTexture("assets/Tilemap/monochrome_tilemap_transparent.png")
+
+	gamestate.vfx_shader = rl.LoadShader(nil, "assets/shaders/vfx.glsl")
 
 
 	if project, ok := ldtk.load_from_file("assets/level.ldtk", context.temp_allocator).?; ok {
@@ -58,6 +79,7 @@ main :: proc() {
 	append(&entities, make_player(get_spawn_point(gamestate.current_level)))
 
 	gamestate.render_surface = rl.LoadRenderTexture(SCREEN_WIDTH, SCREEN_HEIGHT)
+	gamestate.intermediate_surface = rl.LoadRenderTexture(SCREEN_WIDTH, SCREEN_HEIGHT)
 
 	for !rl.WindowShouldClose() {
 		update()
@@ -73,10 +95,26 @@ get_relative_pos :: proc(pos: rl.Vector2) -> rl.Vector2 {
 }
 
 draw :: proc() {
-	rl.BeginTextureMode(gamestate.render_surface)
+	update_shader_uniforms()
+
+	rl.BeginTextureMode(gamestate.intermediate_surface)
 	rl.ClearBackground(rl.BLACK)
 	draw_tiles(gamestate.current_level, tilesheet)
 	render_entities()
+	rl.EndTextureMode()
+
+	rl.BeginTextureMode(gamestate.render_surface)
+	rl.BeginShaderMode(gamestate.vfx_shader)
+	rl.DrawTexturePro(
+		gamestate.intermediate_surface.texture,
+		{0, 0, SCREEN_WIDTH, -SCREEN_HEIGHT},
+		{0, 0, SCREEN_WIDTH, SCREEN_HEIGHT},
+		{0, 0},
+		0,
+		rl.WHITE,
+	)
+	rl.EndShaderMode()
+
 	draw_static_meter()
 	rl.EndTextureMode()
 
@@ -129,5 +167,18 @@ update :: proc() -> f32 {
 		math.min(level.position.y + f32(level.height) - (SCREEN_HEIGHT / 2), gamestate.camera_offset.y),
 	)
 
+
+	player := entities[Entity_Tag.Player]
+	pos := get_relative_pos(player.translation)
+	pos /= {SCREEN_WIDTH, SCREEN_HEIGHT}
+	if (rl.IsKeyPressed(.E)) {
+		ripple.add(pos, 1)
+		ripple.add(pos, 2)
+	}
+	if (rl.IsKeyPressed(.Q)) {
+		ripple.add(pos, 0)
+	}
+
+	ripple.update()
 	return time.simulation_time / TICK_RATE
 }
