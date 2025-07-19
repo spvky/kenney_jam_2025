@@ -75,7 +75,6 @@ main :: proc() {
 		gamestate.current_level = gamestate.levels[0]
 	}
 
-
 	append(&entities, make_player(get_spawn_point(gamestate.current_level)))
 
 	gamestate.render_surface = rl.LoadRenderTexture(SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -179,6 +178,41 @@ update :: proc() -> f32 {
 		ripple.add(pos, 0)
 	}
 
+	check_kill_player()
 	ripple.update()
 	return time.simulation_time / TICK_RATE
+}
+
+check_kill_player :: proc() {
+	level := gamestate.current_level
+	player := &entities[Entity_Tag.Player]
+	pos := get_relative_pos(player.translation)
+	pos /= {SCREEN_WIDTH, SCREEN_HEIGHT}
+
+
+	if check_killzone(level, player.translation) || player.translation.y > level.position.y + f32(level.height) {
+		ripple.add(pos, 1)
+
+		player.translation = get_spawn_point(level)
+		player.velocity = {0, 0}
+		player.snapshot = player.translation
+
+	}
+}
+
+check_killzone :: proc(level: Level, pos: rl.Vector2) -> bool {
+
+	pos_rect := rl.Rectangle{pos[0], pos[1], TILE_SIZE, TILE_SIZE}
+
+	for entity in level.entities {
+		#partial switch entity.type {
+		case .Killzone:
+			entity_position := entity.position + level.position
+			killzone_rect := rl.Rectangle{entity_position[0], entity_position[1], TILE_SIZE, TILE_SIZE}
+			if rl.CheckCollisionRecs(pos_rect, killzone_rect) {
+				return true
+			}
+		}
+	}
+	return false
 }

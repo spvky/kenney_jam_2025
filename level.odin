@@ -156,5 +156,6 @@ get_spawn_point :: proc(level: Level) -> rl.Vector2 {
 			return entity.position
 		}
 	}
+	assert(false)
 	return {0, 0}
 }
