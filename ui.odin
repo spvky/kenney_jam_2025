@@ -19,7 +19,8 @@ draw_static_meter :: proc() {
 
 	frametime := rl.GetFrameTime()
 	handle_static_meter(frametime)
+	color: rl.Color = charge == 100 ? {25, 204, 176, 255} : {255, 255, 255, 255}
 	meter_texture := charge == 100 ? ui_textures[.StaticMeterFull] : ui_textures[.StaticMeter]
-	rl.DrawRectanglePro({x = 16, y = 128, width = 8, height = displayed_charge}, {6, 0}, 180, rl.WHITE)
+	rl.DrawRectanglePro({x = 16, y = 128, width = 8, height = displayed_charge}, {6, 0}, 180, color)
 	rl.DrawTextureV(meter_texture, {10, 10}, rl.WHITE)
 }
