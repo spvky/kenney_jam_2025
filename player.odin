@@ -81,6 +81,9 @@ player_dash :: proc() {
 			if entity.state == .Grounded && is_action_buffered(.Dash) && has_charge(30) {
 				entity.speed.max = 150
 				entity.speed.acceleration = 450
+				pos := get_relative_pos(entity.translation)
+				pos /= {SCREEN_WIDTH, SCREEN_HEIGHT}
+				ripple.add(pos, .Teal)
 				consume_action(.Dash)
 				spend_charge(30)
 			}
