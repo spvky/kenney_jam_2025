@@ -1668,7 +1668,7 @@
 					312,
 					313
 				]
-			}, { "enumValueId": "Static_Gen", "tileIds": [87,88,89,107,108,109,127,128,129] } ],
+			}, { "enumValueId": "Static_Gen", "tileIds": [87,88,89,107,108,109,127,128,129] }, { "enumValueId": "LeafEmitter", "tileIds": [14,15,19,33,34,35,39,53,54,55] } ],
 			"customData": [],
 			"savedSelections": [],
 			"cachedPixelData": {
@@ -1679,7 +1679,8 @@
 	], "enums": [{ "identifier": "TileEnum", "uid": 19, "values": [
 		{ "id": "Collision", "tileRect": null, "color": 12470831 },
 		{ "id": "Slippery", "tileRect": null, "color": 14120515 },
-		{ "id": "Static_Gen", "tileRect": null, "color": 15389866 }
+		{ "id": "Static_Gen", "tileRect": null, "color": 15389866 },
+		{ "id": "LeafEmitter", "tileRect": null, "color": 14984818 }
 	], "iconTilesetUid": null, "externalRelPath": null, "externalFileChecksum": null, "tags": [] }], "externalEnums": [], "levelFields": [] },
 	"levels": [
 		{

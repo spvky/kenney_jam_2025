@@ -34,6 +34,7 @@ Tile_Property :: enum {
 	Collision,
 	Slippery,
 	Static_Gen,
+	LeafEmitter,
 }
 
 properties_from_strings :: proc(properties: []string) -> bit_set[Tile_Property] {
@@ -46,6 +47,8 @@ properties_from_strings :: proc(properties: []string) -> bit_set[Tile_Property] 
 			property_set = property_set | {.Slippery}
 		case "Static_Gen":
 			property_set = property_set | {.Static_Gen}
+		case "LeafEmitter":
+			property_set = property_set | {.LeafEmitter}
 		}
 	}
 	return property_set
