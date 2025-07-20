@@ -47,6 +47,7 @@ Time :: struct {
 GameStateEnum :: enum {
 	MainMenu,
 	Playing,
+	End,
 }
 
 MainMenuContext :: struct {
@@ -65,6 +66,7 @@ GameState :: struct {
 	menu_context:         MainMenuContext,
 	transitioning:        bool,
 	collectible_count:    int,
+	frame_count:          uint,
 }
 
 Vec2 :: [2]f32
@@ -117,6 +119,7 @@ main :: proc() {
 
 	load_collectibles(gamestate.levels)
 
+	rl.SetTargetFPS(144)
 	for !rl.WindowShouldClose() {
 		update()
 		draw()
@@ -203,10 +206,60 @@ draw :: proc() {
 			rl.WHITE,
 		)
 		rl.EndDrawing()
+	case .End:
+		update_shader_uniforms()
+
+		rl.BeginTextureMode(gamestate.intermediate_surface)
+		rl.ClearBackground(rl.BLACK)
+
+		font_size :: 20
+
+		options: [2]string = {"Thanks for playing!", "press 'esc' to exit"}
+		for i in 0 ..< len(options) {
+			option := options[i]
+			text := rl.TextFormat("%s", option)
+			text_width := rl.MeasureText(text, font_size)
+			rl.DrawText(text, (SCREEN_WIDTH / 2) - (text_width / 2), i32(100 + i * font_size), font_size, rl.WHITE)
+		}
+
+		// add TOTAL coins collected
+
+		option := "made by: Spvky, Bones and Jae"
+		text := rl.TextFormat("%s", option)
+		text_width := rl.MeasureText(text, font_size)
+		rl.DrawText(text, (SCREEN_WIDTH / 2) - (text_width / 2), i32(200), font_size, rl.WHITE)
+		rl.EndTextureMode()
+
+		rl.BeginTextureMode(gamestate.render_surface)
+		rl.BeginShaderMode(gamestate.vfx_shader)
+		rl.DrawTexturePro(
+			gamestate.intermediate_surface.texture,
+			{0, 0, SCREEN_WIDTH, -SCREEN_HEIGHT},
+			{0, 0, SCREEN_WIDTH, SCREEN_HEIGHT},
+			{0, 0},
+			0,
+			rl.WHITE,
+		)
+		rl.EndShaderMode()
+
+		transition.draw()
+		rl.EndTextureMode()
+
+		rl.BeginDrawing()
+		rl.DrawTexturePro(
+			gamestate.render_surface.texture,
+			{0, 0, SCREEN_WIDTH, -SCREEN_HEIGHT},
+			{0, 0, WINDOW_WIDTH, WINDOW_HEIGHT},
+			{0, 0},
+			0,
+			rl.WHITE,
+		)
+		rl.EndDrawing()
 	}
 }
 
 update :: proc() -> f32 {
+	gamestate.frame_count += 1
 	switch gamestate.state {
 	case .Playing:
 		frametime := rl.GetFrameTime()
@@ -259,7 +312,13 @@ update :: proc() -> f32 {
 			if transition.transition.progress == 1 {
 				gamestate.current_level += 1
 				transition.start(nil, gamestate.render_surface.texture)
-				spawn_player(get_spawn_point(gamestate.levels[gamestate.current_level]))
+
+				if gamestate.current_level >= len(gamestate.levels) {
+					gamestate.state = .End
+					break
+				} else {
+					spawn_player(get_spawn_point(gamestate.levels[gamestate.current_level]))
+				}
 				gamestate.transitioning = false
 			}
 		} else {
@@ -312,6 +371,15 @@ update :: proc() -> f32 {
 					rl.CloseWindow()
 				}
 			}
+		}
+	case .End:
+		transition.update()
+		ripple.update()
+		particles.update()
+
+		if (gamestate.frame_count % 144 == 0) {
+			palette := ripple.PaletteEnum(int(gamestate.frame_count / 144) % int(ripple.PaletteEnum.Gold) + 1)
+			ripple.add({0.5, 0.5}, palette)
 		}
 	}
 	return time.simulation_time / TICK_RATE
