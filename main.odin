@@ -243,7 +243,7 @@ update :: proc() -> f32 {
 		for tile in level.tiles {
 			if tile_has_property(tile, .LeafEmitter) {
 				if abs(math.sin(f32(rl.GetTime() * 3) + tile.position.x)) < 0.002 {
-					center_position := tile.position + ({TILE_SIZE, TILE_SIZE} / 2)
+					center_position := tile.position + level.position + ({TILE_SIZE, TILE_SIZE} / 2)
 					particles.add({position = center_position, lifetime = 15, radius = 0.5, kind = .Leaf})
 				}
 			}
