@@ -225,7 +225,7 @@ update :: proc() -> f32 {
 		track_player_state()
 		level := gamestate.levels[gamestate.current_level]
 
-		target_position := (player.snapshot - gamestate.camera_offset) / 20
+		target_position := (player.snapshot - gamestate.camera_offset) * frametime * 3 // 300ms
 		gamestate.camera_offset += target_position
 
 		// clamping to level in x axis
