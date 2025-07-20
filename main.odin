@@ -14,6 +14,8 @@ SCREEN_WIDTH :: 480
 SCREEN_HEIGHT :: 360
 TICK_RATE :: 1.0 / 200.0
 
+COLLECTIBLE_RADIUS :: 8
+
 player: Player
 enemies: [dynamic]Enemy
 time: Time
@@ -62,6 +64,7 @@ GameState :: struct {
 	state:                GameStateEnum,
 	menu_context:         MainMenuContext,
 	transitioning:        bool,
+	collectible_count:    int,
 }
 
 Vec2 :: [2]f32
@@ -89,6 +92,7 @@ main :: proc() {
 	rl.InitAudioDevice()
 	defer rl.CloseAudioDevice()
 
+	gamestate.collectible_count = 0
 
 	player_texture = load_player_texture()
 	enemy_texture = load_enemy_texture()
@@ -110,6 +114,8 @@ main :: proc() {
 
 	gamestate.render_surface = rl.LoadRenderTexture(SCREEN_WIDTH, SCREEN_HEIGHT)
 	gamestate.intermediate_surface = rl.LoadRenderTexture(SCREEN_WIDTH, SCREEN_HEIGHT)
+
+	load_collectibles(gamestate.levels)
 
 	for !rl.WindowShouldClose() {
 		update()
@@ -133,6 +139,7 @@ draw :: proc() {
 		rl.BeginTextureMode(gamestate.intermediate_surface)
 		rl.ClearBackground(rl.BLACK)
 		particles.draw(get_relative_pos)
+		draw_collectibles(gamestate.current_level, tilesheet)
 		draw_tiles(gamestate.levels[gamestate.current_level], tilesheet)
 		render_player()
 		render_enemies()
@@ -259,6 +266,18 @@ update :: proc() -> f32 {
 			input()
 		}
 
+
+		for &collectible in collectibles {
+			if collectible.level_index == gamestate.current_level && !collectible.is_collected {
+				pos := player.translation
+				pos -= {8, 8}
+
+
+				if abs(rl.Vector2Distance(collectible.position, pos)) < COLLECTIBLE_RADIUS {
+					collect_collectible(&collectible)
+				}
+			}
+		}
 		transition.update()
 		handle_triggers()
 		ripple.update()

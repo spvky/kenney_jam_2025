@@ -27,12 +27,14 @@ Tile :: struct {
 Level_Entity :: struct {
 	type:     Entity_Type,
 	position: rl.Vector2,
+	tile:     Maybe(ldtk.Tileset_Rectangle),
 }
 
 Entity_Type :: enum {
 	Killzone,
 	Next_level,
 	Player_spawn,
+	Collectible,
 }
 
 Tile_Property :: enum {
@@ -98,6 +100,7 @@ add_tile :: proc(tiles: ^[dynamic]Tile, tileset_definition: ldtk.Tileset_Definit
 add_entity :: proc(entities: ^[dynamic]Level_Entity, entity_instance: ldtk.Entity_Instance) {
 	entity := Level_Entity {
 		position = {f32(entity_instance.px[0]), f32(entity_instance.px[1])},
+		tile     = entity_instance.tile,
 	}
 
 
@@ -110,6 +113,9 @@ add_entity :: proc(entities: ^[dynamic]Level_Entity, entity_instance: ldtk.Entit
 		entity.type = .Player_spawn
 	case "Next_level":
 		entity.type = .Next_level
+
+	case "Collectible":
+		entity.type = .Collectible
 	}
 
 	append(entities, entity)
@@ -196,6 +202,8 @@ kill_player :: proc(level: Level) {
 
 	ripple.add(pos, .Red)
 
+	reset_collectibles(gamestate.current_level)
+
 	spawn_player(get_spawn_point(level))
 	play_sound(.Death)
 }
@@ -240,6 +248,7 @@ handle_triggers :: proc() {
 				player.velocity *= 0.2
 				player.x_delta *= 0.2
 			}
+
 		}
 	}
 }
