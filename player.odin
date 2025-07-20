@@ -234,22 +234,6 @@ set_player_animation :: proc() {
 	}
 }
 
-import "core:fmt"
-import "core:strings"
-
-debug_physics :: proc() {
-	debug_string := fmt.tprintf(
-		"TIME_TO_PEAK: %v\nTIME_TO_DESCENT: %v\nJUMP_HEIGHT: %v\njump_speed: %v\nrising_gravity: %v\nfalling_gravity: %v",
-		TIME_TO_PEAK,
-		TIME_TO_DESCENT,
-		JUMP_HEIGHT,
-		jump_speed,
-		rising_gravity,
-		falling_gravity,
-	)
-	rl.DrawText(strings.clone_to_cstring(debug_string), 120, 60, 12, rl.WHITE)
-}
-
 player_jump :: proc() {
 	if player.grounded_lockout > 0 {
 		player.grounded_lockout -= TICK_RATE
