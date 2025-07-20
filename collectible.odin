@@ -1,5 +1,6 @@
 package main
 
+import particles "particles"
 import ripple "ripple"
 import rl "vendor:raylib"
 
@@ -20,6 +21,8 @@ collect_collectible :: proc(collectible: ^Collectible) {
 
 	sound_index := int(rl.GetTime() * 2) % 4
 	play_sound(Sound(int(Sound.Collect1) + sound_index))
+
+	particles.add({position = collectible.position + {8, 8}, lifetime = 0.2, radius = 0.2, kind = .Ripple})
 }
 
 load_collectibles :: proc(levels: [dynamic]Level) {
