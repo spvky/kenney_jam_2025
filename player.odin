@@ -272,9 +272,6 @@ player_jump :: proc() {
 	}
 }
 
-// Height = (gravity * t2)/8
-// 64 / 
-
 player_land :: proc() {
 	player.coyote_time = 0.15
 	play_sound(.Land)
