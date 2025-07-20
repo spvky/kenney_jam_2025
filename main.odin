@@ -266,6 +266,7 @@ update :: proc() -> f32 {
 	case .MainMenu:
 		transition.update()
 		ctx := &gamestate.menu_context
+		blip_sound_index := int(rl.GetTime() * 2) % 3
 		if (ctx.starting_playing) {
 			if transition.transition.progress == 1 {
 				gamestate.state = .Playing
@@ -275,9 +276,13 @@ update :: proc() -> f32 {
 			menu_options :: 2
 			if rl.IsKeyPressed(.W) {
 				ctx.selected = (ctx.selected + 1) % menu_options
+				play_sound(Sound(int(Sound.Select1) + blip_sound_index))
 			} else if rl.IsKeyPressed(.S) {
 				ctx.selected = (ctx.selected + menu_options - 1) % menu_options
+				play_sound(Sound(int(Sound.Select1) + blip_sound_index))
 			} else if rl.IsKeyPressed(.E) {
+				play_sound(Sound(int(Sound.Select1) + blip_sound_index))
+
 				switch ctx.selected {
 				case 0:
 					// start playing
