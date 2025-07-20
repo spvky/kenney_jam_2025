@@ -209,7 +209,6 @@ update :: proc() -> f32 {
 			time.t = f32(rl.GetTime())
 			time.started = true
 		}
-		input()
 
 		t1 := f32(rl.GetTime())
 		elapsed := math.min(t1 - time.t, 0.25)
@@ -255,8 +254,9 @@ update :: proc() -> f32 {
 				transition.start(nil, gamestate.render_surface.texture)
 				spawn_player(get_spawn_point(gamestate.levels[gamestate.current_level]))
 				gamestate.transitioning = false
-
 			}
+		} else {
+			input()
 		}
 
 		transition.update()

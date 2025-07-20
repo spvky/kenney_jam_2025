@@ -178,6 +178,7 @@ get_spawn_point :: proc(level: Level) -> rl.Vector2 {
 spawn_player :: proc(spawn_position: rl.Vector2) {
 	player.translation = spawn_position
 	player.velocity = {0, 0}
+	player.x_delta = 0
 	player.snapshot = player.translation
 	spend_charge(static_meter.charge)
 
@@ -236,6 +237,8 @@ handle_triggers :: proc() {
 				gamestate.transitioning = true
 
 				ripple.add(get_relative_pos(pos) / {SCREEN_WIDTH, SCREEN_HEIGHT}, .Yellow)
+				player.velocity *= 0.2
+				player.x_delta *= 0.2
 			}
 		}
 	}
