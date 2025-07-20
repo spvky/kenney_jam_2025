@@ -7,8 +7,8 @@ import particles "particles"
 import ripple "ripple"
 import transition "transition"
 import rl "vendor:raylib"
-WINDOW_WIDTH :: 1600
-WINDOW_HEIGHT :: 900
+WINDOW_WIDTH := 1600
+WINDOW_HEIGHT := 900
 
 SCREEN_WIDTH :: 480
 SCREEN_HEIGHT :: 360
@@ -89,7 +89,7 @@ update_shader_uniforms :: proc() {
 }
 
 main :: proc() {
-	rl.InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "KenneyJam")
+	rl.InitWindow(i32(WINDOW_WIDTH), i32(WINDOW_HEIGHT), "KenneyJam")
 	defer rl.CloseWindow()
 	rl.InitAudioDevice()
 	defer rl.CloseAudioDevice()
@@ -121,6 +121,10 @@ main :: proc() {
 
 	rl.SetTargetFPS(144)
 	for !rl.WindowShouldClose() {
+		if (rl.IsWindowResized()) {
+			WINDOW_WIDTH = int(rl.GetScreenWidth())
+			WINDOW_HEIGHT = int(rl.GetScreenHeight())
+		}
 		update()
 		draw()
 		free_all(context.temp_allocator)
@@ -168,7 +172,7 @@ draw :: proc() {
 		rl.DrawTexturePro(
 			gamestate.render_surface.texture,
 			{0, 0, SCREEN_WIDTH, -SCREEN_HEIGHT},
-			{0, 0, WINDOW_WIDTH, WINDOW_HEIGHT},
+			{0, 0, f32(WINDOW_WIDTH), f32(WINDOW_HEIGHT)},
 			{0, 0},
 			0,
 			rl.WHITE,
@@ -200,7 +204,7 @@ draw :: proc() {
 		rl.DrawTexturePro(
 			gamestate.render_surface.texture,
 			{0, 0, SCREEN_WIDTH, -SCREEN_HEIGHT},
-			{0, 0, WINDOW_WIDTH, WINDOW_HEIGHT},
+			{0, 0, f32(WINDOW_WIDTH), f32(WINDOW_HEIGHT)},
 			{0, 0},
 			0,
 			rl.WHITE,
@@ -249,7 +253,7 @@ draw :: proc() {
 		rl.DrawTexturePro(
 			gamestate.render_surface.texture,
 			{0, 0, SCREEN_WIDTH, -SCREEN_HEIGHT},
-			{0, 0, WINDOW_WIDTH, WINDOW_HEIGHT},
+			{0, 0, f32(WINDOW_WIDTH), f32(WINDOW_HEIGHT)},
 			{0, 0},
 			0,
 			rl.WHITE,
