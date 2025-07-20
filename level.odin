@@ -40,6 +40,7 @@ Tile_Property :: enum {
 	Slippery,
 	Static_Gen,
 	LeafEmitter,
+	Harmful,
 }
 
 properties_from_strings :: proc(properties: []string) -> bit_set[Tile_Property] {
@@ -54,6 +55,8 @@ properties_from_strings :: proc(properties: []string) -> bit_set[Tile_Property] 
 			property_set = property_set | {.Static_Gen}
 		case "LeafEmitter":
 			property_set = property_set | {.LeafEmitter}
+		case "Harmful":
+			property_set = property_set | {.Harmful}
 		}
 	}
 	return property_set
@@ -200,13 +203,28 @@ handle_triggers :: proc() {
 	level := gamestate.levels[gamestate.current_level]
 	pos := player.translation
 
+	// adjusting for rendering offset
+	pos -= {8, 8}
+
 
 	if pos.y > (f32(level.height) + level.position.y) {
 		kill_player(level)
 	}
 
-	if entity_type, ok := check_triggers(level, pos).?; ok {
+	for tile in level.tiles {
+		if tile_has_property(tile, .Harmful) {
+			player_rect := rl.Rectangle{pos[0], pos[1], TILE_SIZE, TILE_SIZE}
+			if rl.CheckCollisionRecs(
+				player_rect,
+				{tile.position.x + level.position.x, tile.position.y + level.position.y, TILE_SIZE, TILE_SIZE},
+			) {
+				kill_player(level)
+				return
+			}
+		}
+	}
 
+	if entity_type, ok := check_triggers(level, pos).?; ok {
 		#partial switch entity_type {
 		case .Killzone:
 			kill_player(level)
@@ -223,31 +241,18 @@ handle_triggers :: proc() {
 }
 
 check_triggers :: proc(level: Level, pos: rl.Vector2) -> Maybe(Entity_Type) {
-
-	pos_rect := rl.Rectangle{pos[0], pos[1], TILE_SIZE, TILE_SIZE}
+	player_rect := rl.Rectangle{pos[0], pos[1], TILE_SIZE, TILE_SIZE}
 
 	for entity in level.entities {
-
 		entity_position := entity.position + level.position
 
 		#partial switch entity.type {
-		case .Killzone:
-			killzone_rect := rl.Rectangle{entity_position[0], entity_position[1], TILE_SIZE, TILE_SIZE}
-			if rl.CheckCollisionRecs(pos_rect, killzone_rect) {
-				return .Killzone
-			}
-		case .Next_level:
+		case .Killzone, .Next_level:
 			next_rect := rl.Rectangle{entity_position[0], entity_position[1], TILE_SIZE, TILE_SIZE}
-			if rl.CheckCollisionRecs(pos_rect, next_rect) {
-				return .Next_level
+			if rl.CheckCollisionRecs(player_rect, next_rect) {
+				return entity.type
 			}
 		}
 	}
 	return nil
-}
-
-
-switch_level :: proc() {
-
-
 }
