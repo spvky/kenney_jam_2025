@@ -140,6 +140,7 @@ draw :: proc() {
 		rl.EndShaderMode()
 
 		draw_static_meter()
+		debug_physics()
 		transition.draw()
 		rl.EndTextureMode()
 

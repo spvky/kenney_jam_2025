@@ -5,6 +5,42 @@ import "particles"
 import "ripple"
 import rl "vendor:raylib"
 
+
+////////////// Physics values ///////////////////
+
+// How far can the player jump horizontally (in pixels)
+MAX_JUMP_DISTANCE: f32 : 80
+// How long to reach jump peak (in seconds)
+TIME_TO_PEAK: f32 : 0.35
+// How long to reach height we jumped from (in seconds)
+TIME_TO_DESCENT: f32 : 0.2
+// How many pixels high can we jump
+JUMP_HEIGHT: f32 : 40
+
+max_speed := calculate_max_speed()
+jump_speed := calulate_jump_speed()
+rising_gravity := calculate_rising_gravity()
+falling_gravity := calculate_falling_gravity()
+
+
+calulate_jump_speed :: proc() -> f32 {
+	return (-2 * JUMP_HEIGHT) / TIME_TO_PEAK
+}
+
+calculate_rising_gravity :: proc() -> f32 {
+	return (2 * JUMP_HEIGHT) / math.pow(TIME_TO_PEAK, 2)
+}
+
+calculate_falling_gravity :: proc() -> f32 {
+	return (2 * JUMP_HEIGHT) / math.pow(TIME_TO_DESCENT, 2)
+}
+
+calculate_max_speed :: proc() -> f32 {
+	return MAX_JUMP_DISTANCE / (TIME_TO_PEAK + TIME_TO_DESCENT)
+}
+
+//////////////////////////////////////////////
+
 Player :: struct {
 	state:            Player_State,
 	radius:           f32,
@@ -54,11 +90,9 @@ Animation_Tag :: enum {
 }
 
 Speed :: struct {
-	base_max:          f32,
-	max:               f32,
-	base_acceleration: f32,
-	acceleration:      f32,
-	deceleration:      f32,
+	max:          f32,
+	acceleration: f32,
+	deceleration: f32,
 }
 
 
@@ -82,7 +116,7 @@ make_player :: proc(spawn_point: rl.Vector2) -> Player {
 		},
 		facing = 1,
 		translation = spawn_point,
-		speed = Speed{base_max = 50, max = 50, base_acceleration = 275, acceleration = 275, deceleration = 0.025},
+		speed = Speed{max = max_speed, acceleration = 275, deceleration = 0.75},
 	}
 }
 
@@ -200,6 +234,22 @@ set_player_animation :: proc() {
 	}
 }
 
+import "core:fmt"
+import "core:strings"
+
+debug_physics :: proc() {
+	debug_string := fmt.tprintf(
+		"TIME_TO_PEAK: %v\nTIME_TO_DESCENT: %v\nJUMP_HEIGHT: %v\njump_speed: %v\nrising_gravity: %v\nfalling_gravity: %v",
+		TIME_TO_PEAK,
+		TIME_TO_DESCENT,
+		JUMP_HEIGHT,
+		jump_speed,
+		rising_gravity,
+		falling_gravity,
+	)
+	rl.DrawText(strings.clone_to_cstring(debug_string), 120, 60, 12, rl.WHITE)
+}
+
 player_jump :: proc() {
 	if player.grounded_lockout > 0 {
 		player.grounded_lockout -= TICK_RATE
@@ -211,13 +261,13 @@ player_jump :: proc() {
 		#partial switch player.state {
 		case .Grounded:
 			player.coyote_time = 0
-			player.velocity.y = -125
+			player.velocity.y = jump_speed
 			consume_action(.Jump)
 			player.grounded_lockout = 0.2
 		case .Airborne:
 			if player.coyote_time > 0 {
 				player.coyote_time = 0
-				player.velocity.y = -125
+				player.velocity.y = jump_speed
 				consume_action(.Jump)
 			} else {
 				if has_charge(COST) {
@@ -225,7 +275,7 @@ player_jump :: proc() {
 					pos /= {SCREEN_WIDTH, SCREEN_HEIGHT}
 					ripple.add(pos, .Teal)
 					particles.add({position = player.translation, lifetime = 1, radius = 0.5, kind = .Ripple})
-					player.velocity.y = -175
+					player.velocity.y = jump_speed
 					consume_action(.Jump)
 					spend_charge(COST)
 				}
@@ -234,14 +284,16 @@ player_jump :: proc() {
 	}
 }
 
+// Height = (gravity * t2)/8
+// 64 / 
+
 player_land :: proc() {
 	player.coyote_time = 0.15
 }
 
 player_dash :: proc() {
-	if player.state == .Grounded && is_action_buffered(.Dash) && has_charge(COST) {
-		player.speed.max = 150
-		player.speed.acceleration = 450
+	if is_action_buffered(.Dash) && has_charge(COST) {
+		// Dash Physics
 		pos := get_relative_pos(player.translation)
 		pos /= {SCREEN_WIDTH, SCREEN_HEIGHT}
 		ripple.add(pos, .Teal)

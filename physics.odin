@@ -5,6 +5,7 @@ import "core:math"
 import l "core:math/linalg"
 import rl "vendor:raylib"
 
+
 Platform :: struct {
 	translation: Vec2,
 	size:        Vec2,
@@ -14,6 +15,7 @@ Collision_Data :: struct {
 	normal: Vec2,
 	mtv:    Vec2,
 }
+
 
 physics_step :: proc() {
 	player_platform_collision()
@@ -32,7 +34,11 @@ simulate_dynamics :: proc() {
 apply_gravity :: proc() {
 	switch player.state {
 	case .Airborne:
-		player.velocity.y += 250 * TICK_RATE
+		if player.velocity.y < 0 {
+			player.velocity.y += rising_gravity * TICK_RATE
+		} else {
+			player.velocity.y += falling_gravity * TICK_RATE
+		}
 		if player.coyote_time > 0 {
 			player.coyote_time -= TICK_RATE
 		}
@@ -45,12 +51,7 @@ apply_gravity :: proc() {
 }
 
 manage_player_velocity :: proc() {
-	max, acceleration, deceleration, base_max, base_acceleration :=
-		player.speed.max,
-		player.speed.acceleration,
-		player.speed.deceleration,
-		player.speed.base_max,
-		player.speed.base_acceleration
+	max, acceleration, deceleration := player.speed.max, player.speed.acceleration, player.speed.deceleration
 	if player.x_delta != 0 {
 		if player.x_delta * player.velocity.x < max {
 			player.velocity.x += TICK_RATE * acceleration * player.x_delta
@@ -60,18 +61,6 @@ manage_player_velocity :: proc() {
 		player.velocity.x = player.velocity.x * factor
 		if math.abs(player.velocity.x) < 0.3 {
 			player.velocity.x = 0
-		}
-	}
-	if max > player.speed.base_max {
-		player.speed.max = l.lerp(max, base_max, TICK_RATE)
-		if player.speed.max < base_max {
-			player.speed.max = base_max
-		}
-	}
-	if acceleration > player.speed.base_acceleration {
-		player.speed.acceleration = l.lerp(acceleration, base_acceleration, TICK_RATE)
-		if player.speed.acceleration < base_acceleration {
-			player.speed.acceleration = base_acceleration
 		}
 	}
 }
