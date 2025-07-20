@@ -196,6 +196,7 @@ kill_player :: proc(level: Level) {
 	ripple.add(pos, .Red)
 
 	spawn_player(get_spawn_point(level))
+	play_sound(.Death)
 }
 
 
