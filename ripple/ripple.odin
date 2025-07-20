@@ -13,7 +13,7 @@ palette := [PALETTE_COUNT]rl.Vector3 {
 	{.1, .8, .7},
 	{.8, .2, .3},
 	{.13, .8, .2},
-	{.1, .8, .7},
+	{1, .8, .2},
 	{.1, .1, .1},
 	{.1, .1, .1},
 	{.1, .1, .1},
@@ -26,6 +26,7 @@ PaletteEnum :: enum {
 	Teal,
 	Red,
 	Green,
+	Yellow,
 }
 
 ripple_count: i32 = 0

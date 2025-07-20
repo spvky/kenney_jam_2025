@@ -209,10 +209,12 @@ handle_triggers :: proc() {
 			kill_player(level)
 
 		case .Next_level:
-			transition.start(gamestate.render_surface.texture, nil)
-			gamestate.transitioning = true
+			if !gamestate.transitioning {
+				transition.start(gamestate.render_surface.texture, nil)
+				gamestate.transitioning = true
 
-
+				ripple.add(get_relative_pos(pos) / {SCREEN_WIDTH, SCREEN_HEIGHT}, .Yellow)
+			}
 		}
 	}
 }
