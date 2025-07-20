@@ -244,6 +244,8 @@ handle_triggers :: proc() {
 				transition.start(gamestate.render_surface.texture, nil)
 				gamestate.transitioning = true
 
+				gamestate.collectible_count += gamestate.collectible_counter.collected_count
+
 				ripple.add(get_relative_pos(pos) / {SCREEN_WIDTH, SCREEN_HEIGHT}, .Yellow)
 				player.velocity *= 0.2
 				player.x_delta *= 0.2

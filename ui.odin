@@ -27,8 +27,8 @@ draw_static_meter :: proc() {
 }
 
 draw_collectible_counter :: proc(level_index: int, tilesheet: rl.Texture) {
-	total_count := 0
-	collected_count := 0
+	gamestate.collectible_counter.total_count = 0
+	gamestate.collectible_counter.collected_count = 0
 
 	texture_collectible: Collectible
 
@@ -36,18 +36,22 @@ draw_collectible_counter :: proc(level_index: int, tilesheet: rl.Texture) {
 	padding := i32(10)
 
 	for collectible in collectibles {
-		if total_count == 0 {
+		if gamestate.collectible_counter.total_count == 0 {
 			texture_collectible = collectible
 		}
 		if collectible.level_index == gamestate.current_level {
-			total_count += 1
+			gamestate.collectible_counter.total_count += 1
 			if collectible.is_collected {
-				collected_count += 1
+				gamestate.collectible_counter.collected_count += 1
 			}
 		}
 	}
 
-	text := rl.TextFormat("%d/%d", collected_count, total_count)
+	text := rl.TextFormat(
+		"%d/%d",
+		gamestate.collectible_counter.collected_count,
+		gamestate.collectible_counter.total_count,
+	)
 	text_width := rl.MeasureText(text, font_size)
 	x := SCREEN_WIDTH - text_width - padding
 	y := padding

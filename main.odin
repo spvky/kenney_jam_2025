@@ -30,6 +30,8 @@ static_meter := Static_Meter {
 	charge     = 0,
 }
 
+total_collectibles: int
+
 player_animations := [Animation_Tag]Animation {
 	.Idle = SingleFrame{idx = 0},
 	.Run = MultiFrame{start = 1, end = 3},
@@ -55,6 +57,10 @@ MainMenuContext :: struct {
 	starting_playing: bool,
 }
 
+Collectible_Counter :: struct {
+	total_count:     int,
+	collected_count: int,
+}
 GameState :: struct {
 	render_surface:       rl.RenderTexture,
 	levels:               [dynamic]Level,
@@ -66,6 +72,7 @@ GameState :: struct {
 	menu_context:         MainMenuContext,
 	transitioning:        bool,
 	collectible_count:    int,
+	collectible_counter:  Collectible_Counter,
 	frame_count:          uint,
 }
 
@@ -118,6 +125,8 @@ main :: proc() {
 	gamestate.intermediate_surface = rl.LoadRenderTexture(SCREEN_WIDTH, SCREEN_HEIGHT)
 
 	load_collectibles(gamestate.levels)
+
+	total_collectibles = len(collectibles)
 
 	rl.SetTargetFPS(144)
 	for !rl.WindowShouldClose() {
@@ -226,7 +235,11 @@ draw :: proc() {
 			rl.DrawText(text, (SCREEN_WIDTH / 2) - (text_width / 2), i32(100 + i * font_size), font_size, rl.WHITE)
 		}
 
-		// add TOTAL coins collected
+
+		coin_text := rl.TextFormat("You collected: %d/%d coins!", gamestate.collectible_count, total_collectibles)
+		coin_text_width := rl.MeasureText(coin_text, font_size)
+		rl.DrawText(coin_text, (SCREEN_WIDTH / 2) - (coin_text_width / 2), i32(300), font_size, rl.WHITE)
+
 
 		option := "made by: Spvky, Bones and Jae"
 		text := rl.TextFormat("%s", option)
