@@ -9,13 +9,13 @@ import rl "vendor:raylib"
 ////////////// Physics values ///////////////////
 
 // How far can the player jump horizontally (in pixels)
-MAX_JUMP_DISTANCE: f32 : 80
+MAX_JUMP_DISTANCE: f32 : TILE_SIZE * 3
 // How long to reach jump peak (in seconds)
 TIME_TO_PEAK: f32 : 0.35
 // How long to reach height we jumped from (in seconds)
 TIME_TO_DESCENT: f32 : 0.2
 // How many pixels high can we jump
-JUMP_HEIGHT: f32 : 40
+JUMP_HEIGHT: f32 : TILE_SIZE * 2
 
 max_speed := calculate_max_speed()
 jump_speed := calulate_jump_speed()
@@ -258,7 +258,7 @@ player_jump :: proc() {
 					pos := get_relative_pos(player.translation)
 					pos /= {SCREEN_WIDTH, SCREEN_HEIGHT}
 					ripple.add(pos, .Teal)
-					particles.add({position = player.translation, lifetime = 1, radius = 0.5, kind = .Ripple})
+					particles.add({position = player.translation, lifetime = 0.4, radius = 0.5, kind = .Ripple})
 					player.velocity.y = jump_speed
 					consume_action(.Jump)
 					spend_charge(COST)
