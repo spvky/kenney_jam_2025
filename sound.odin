@@ -22,8 +22,9 @@ Sound :: enum {
 
 
 load_sounds :: proc() -> [Sound]rl.Sound {
-	rl.SetMasterVolume(0.2)
 	bgm = rl.LoadMusicStream("assets/sounds/bgm.mp3")
+	rl.SetMasterVolume(0.2)
+	rl.SetMusicVolume(bgm, 0.7)
 	return [Sound]rl.Sound {
 		.Land = rl.LoadSound("assets/sounds/land.wav"),
 		.Jump1 = rl.LoadSound("assets/sounds/Jump.wav"),
