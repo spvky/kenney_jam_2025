@@ -16,6 +16,7 @@ Player :: struct {
 	coyote_time:      f32,
 	speed:            Speed,
 	facing:           f32,
+	grounded_lockout: f32,
 }
 
 
@@ -93,9 +94,6 @@ load_player_texture :: proc() -> rl.Texture2D {
 unload_player_texture :: proc() {
 	rl.UnloadTexture(player_texture)
 }
-
-
-import "core:fmt"
 
 animate_player :: proc() {
 	frametime := rl.GetFrameTime()
@@ -203,12 +201,19 @@ set_player_animation :: proc() {
 }
 
 player_jump :: proc() {
+	if player.grounded_lockout > 0 {
+		player.grounded_lockout -= TICK_RATE
+		if player.grounded_lockout < 0 {
+			player.grounded_lockout = 0
+		}
+	}
 	if is_action_buffered(.Jump) {
 		#partial switch player.state {
 		case .Grounded:
 			player.coyote_time = 0
 			player.velocity.y = -125
 			consume_action(.Jump)
+			player.grounded_lockout = 0.2
 		case .Airborne:
 			if player.coyote_time > 0 {
 				player.coyote_time = 0
