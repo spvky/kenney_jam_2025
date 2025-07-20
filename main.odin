@@ -164,6 +164,7 @@ draw :: proc() {
 		)
 		rl.EndShaderMode()
 
+		draw_collectible_counter(gamestate.current_level, tilesheet)
 		draw_static_meter()
 		transition.draw()
 		rl.EndTextureMode()
@@ -199,7 +200,6 @@ draw :: proc() {
 		}
 		transition.draw()
 		rl.EndTextureMode()
-
 		rl.BeginDrawing()
 		rl.DrawTexturePro(
 			gamestate.render_surface.texture,
@@ -273,6 +273,7 @@ update :: proc() -> f32 {
 			time.t = f32(rl.GetTime())
 			time.started = true
 		}
+		input()
 
 		t1 := f32(rl.GetTime())
 		elapsed := math.min(t1 - time.t, 0.25)
@@ -324,9 +325,8 @@ update :: proc() -> f32 {
 					spawn_player(get_spawn_point(gamestate.levels[gamestate.current_level]))
 				}
 				gamestate.transitioning = false
+
 			}
-		} else {
-			input()
 		}
 
 
