@@ -267,6 +267,7 @@ update :: proc() -> f32 {
 	switch gamestate.state {
 	case .Playing:
 		frametime := rl.GetFrameTime()
+		rl.UpdateMusicStream(bgm)
 		animate_player(frametime)
 		animate_enemies(frametime)
 		if !time.started {
@@ -352,6 +353,7 @@ update :: proc() -> f32 {
 		if (ctx.starting_playing) {
 			if transition.transition.progress == 1 {
 				gamestate.state = .Playing
+				rl.PlayMusicStream(bgm)
 				transition.start(nil, gamestate.render_surface.texture)
 			}
 		} else {
