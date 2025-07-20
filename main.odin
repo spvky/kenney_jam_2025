@@ -89,7 +89,7 @@ update_shader_uniforms :: proc() {
 }
 
 main :: proc() {
-	rl.InitWindow(i32(WINDOW_WIDTH), i32(WINDOW_HEIGHT), "KenneyJam")
+	rl.InitWindow(i32(WINDOW_WIDTH), i32(WINDOW_HEIGHT), "static; Void")
 	defer rl.CloseWindow()
 	rl.InitAudioDevice()
 	defer rl.CloseAudioDevice()
