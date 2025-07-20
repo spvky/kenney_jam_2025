@@ -13,6 +13,10 @@ Sound :: enum {
 	Select2,
 	Select3,
 	Charged,
+	Collect1,
+	Collect2,
+	Collect3,
+	Collect4,
 }
 
 
@@ -28,6 +32,10 @@ load_sounds :: proc() -> [Sound]rl.Sound {
 		.Select2 = rl.LoadSound("assets/sounds/Blip1.wav"),
 		.Select3 = rl.LoadSound("assets/sounds/Blip2.wav"),
 		.Charged = rl.LoadSound("assets/sounds/Charged.wav"),
+		.Collect1 = rl.LoadSound("assets/sounds/Pickup.wav"),
+		.Collect2 = rl.LoadSound("assets/sounds/Pickup1.wav"),
+		.Collect3 = rl.LoadSound("assets/sounds/Pickup2.wav"),
+		.Collect4 = rl.LoadSound("assets/sounds/Pickup3.wav"),
 	}
 }
 

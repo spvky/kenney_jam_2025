@@ -17,6 +17,9 @@ collect_collectible :: proc(collectible: ^Collectible) {
 
 	collectible.is_collected = collected
 	ripple.add(get_relative_pos(collectible.position) / {SCREEN_WIDTH, SCREEN_HEIGHT}, .Gold, 50.)
+
+	sound_index := int(rl.GetTime() * 2) % 4
+	play_sound(Sound(int(Sound.Collect1) + sound_index))
 }
 
 load_collectibles :: proc(levels: [dynamic]Level) {
@@ -57,4 +60,3 @@ reset_collectibles :: proc(level_index: int) {
 		}
 	}
 }
-
