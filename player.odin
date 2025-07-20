@@ -171,7 +171,7 @@ add_charge :: proc(amount: f32) {
 
 	new_charge := clamp(charge + amount, 0, max_charge)
 	if charge != 100 && new_charge == 100 {
-		ripple.add({0.5, 0.5}, .Teal)
+		play_sound(.Charged)
 	}
 	charge = new_charge
 }
