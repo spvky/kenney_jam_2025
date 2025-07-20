@@ -125,7 +125,6 @@ player_platform_collision :: proc() {
 
 	if ground_hits > 0 && player.grounded_lockout == 0 {
 		player.state = .Grounded
-		player_land()
 	} else {
 		player.state = .Airborne
 	}

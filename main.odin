@@ -15,11 +15,14 @@ SCREEN_HEIGHT :: 360
 TICK_RATE :: 1.0 / 200.0
 
 player: Player
+enemies: [dynamic]Enemy
 time: Time
 gamestate: GameState
 input_buffer: Input_Buffer
 player_texture: rl.Texture2D
+enemy_texture: rl.Texture2D
 ui_textures: [Ui_Texture_Tag]rl.Texture2D
+sounds: [Sound]rl.Sound
 static_meter := Static_Meter {
 	max_charge = 100,
 	charge     = 0,
@@ -83,8 +86,13 @@ update_shader_uniforms :: proc() {
 main :: proc() {
 	rl.InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "KenneyJam")
 	defer rl.CloseWindow()
+	rl.InitAudioDevice()
+	defer rl.CloseAudioDevice()
+
 
 	player_texture = load_player_texture()
+	enemy_texture = load_enemy_texture()
+	sounds = load_sounds()
 	transition.init(SCREEN_WIDTH, SCREEN_HEIGHT)
 
 	ui_textures = load_ui_textures()
@@ -108,7 +116,9 @@ main :: proc() {
 		draw()
 		free_all(context.temp_allocator)
 	}
+	delete(enemies)
 	unload_player_texture()
+	unload_enemy_texture()
 }
 
 get_relative_pos :: proc(pos: rl.Vector2) -> rl.Vector2 {
@@ -125,6 +135,7 @@ draw :: proc() {
 		particles.draw(get_relative_pos)
 		draw_tiles(gamestate.levels[gamestate.current_level], tilesheet)
 		render_player()
+		render_enemies()
 		rl.EndTextureMode()
 
 		rl.BeginTextureMode(gamestate.render_surface)
@@ -191,7 +202,9 @@ draw :: proc() {
 update :: proc() -> f32 {
 	switch gamestate.state {
 	case .Playing:
-		animate_player()
+		frametime := rl.GetFrameTime()
+		animate_player(frametime)
+		animate_enemies(frametime)
 		if !time.started {
 			time.t = f32(rl.GetTime())
 			time.started = true
@@ -209,6 +222,7 @@ update :: proc() -> f32 {
 			time.simulation_time -= TICK_RATE
 		}
 		set_player_animation()
+		track_player_state()
 		level := gamestate.levels[gamestate.current_level]
 
 		target_position := (player.snapshot - gamestate.camera_offset) / 20

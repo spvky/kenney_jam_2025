@@ -43,6 +43,7 @@ calculate_max_speed :: proc() -> f32 {
 
 Player :: struct {
 	state:            Player_State,
+	previous_state:   Player_State,
 	radius:           f32,
 	animation_player: Animation_Player,
 	translation:      Vec2,
@@ -129,8 +130,7 @@ unload_player_texture :: proc() {
 	rl.UnloadTexture(player_texture)
 }
 
-animate_player :: proc() {
-	frametime := rl.GetFrameTime()
+animate_player :: proc(frametime: f32) {
 	using player.animation_player
 	current_time += frametime
 	switch ca in current_animation {
@@ -273,6 +273,17 @@ player_jump :: proc() {
 
 player_land :: proc() {
 	player.coyote_time = 0.15
+	play_sound(.Land)
+}
+
+track_player_state :: proc() {
+	if player.state != player.previous_state {
+		#partial switch player.state {
+		case .Grounded:
+			player_land()
+		}
+	}
+	player.previous_state = player.state
 }
 
 player_dash :: proc() {

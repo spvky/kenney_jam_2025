@@ -97,9 +97,12 @@ add_entity :: proc(entities: ^[dynamic]Level_Entity, entity_instance: ldtk.Entit
 		position = {f32(entity_instance.px[0]), f32(entity_instance.px[1])},
 	}
 
+
 	switch entity_instance.identifier {
 	case "Killzone":
 		entity.type = .Killzone
+	// TODO: Draw enemeies where there are killzones
+	// append(&enemies, Enemy{translation = {f32(entity_instance.px[0]), f32(entity_instance.px[1])}})
 	case "Player_spawn":
 		entity.type = .Player_spawn
 	case "Next_level":
