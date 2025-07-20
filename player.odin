@@ -235,6 +235,8 @@ set_player_animation :: proc() {
 }
 
 player_jump :: proc() {
+	jump_sound_index := int(rl.GetTime() * 2) % 3
+
 	if player.grounded_lockout > 0 {
 		player.grounded_lockout -= TICK_RATE
 		if player.grounded_lockout < 0 {
@@ -262,9 +264,11 @@ player_jump :: proc() {
 					player.velocity.y = jump_speed
 					consume_action(.Jump)
 					spend_charge(COST)
-				}
+				} else {return}
 			}
 		}
+		play_sound(Sound(int(Sound.Jump1) + jump_sound_index))
+
 	}
 }
 
