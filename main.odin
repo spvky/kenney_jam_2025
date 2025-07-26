@@ -1,7 +1,12 @@
 package main
 
+import "base:runtime"
+import "core:c"
 import fmt "core:fmt"
+import "core:log"
 import math "core:math"
+import "core:mem"
+import "core:strings"
 import ldtk "ldtk"
 import particles "particles"
 import ripple "ripple"
@@ -17,12 +22,10 @@ TICK_RATE :: 1.0 / 200.0
 COLLECTIBLE_RADIUS :: 8
 
 player: Player
-enemies: [dynamic]Enemy
 time: Time
 gamestate: GameState
 input_buffer: Input_Buffer
 player_texture: rl.Texture2D
-enemy_texture: rl.Texture2D
 ui_textures: [Ui_Texture_Tag]rl.Texture2D
 sounds: [Sound]rl.Sound
 static_meter := Static_Meter {
@@ -95,16 +98,34 @@ update_shader_uniforms :: proc() {
 
 }
 
-main :: proc() {
+
+@(private = "file")
+web_context: runtime.Context
+
+
+@(export)
+main_start :: proc "c" () {
+	context = runtime.default_context()
+
+	// The WASM allocator doesn't seem to work properly in combination with
+	// emscripten. There is some kind of conflict with how the manage memory.
+	// So this sets up an allocator that uses emscripten's malloc.
+	context.allocator = emscripten_allocator()
+	runtime.init_global_temporary_allocator(1 * mem.Megabyte)
+
+	// Since we now use js_wasm32 we should be able to remove this and use
+	// context.logger = log.create_console_logger(). However, that one produces
+	// extra newlines on web. So it's a bug in that core lib.
+	context.logger = create_emscripten_logger()
+
+	web_context = context
+
 	rl.InitWindow(i32(WINDOW_WIDTH), i32(WINDOW_HEIGHT), "static; Void")
-	defer rl.CloseWindow()
 	rl.InitAudioDevice()
-	defer rl.CloseAudioDevice()
 
 	gamestate.collectible_count = 0
 
 	player_texture = load_player_texture()
-	enemy_texture = load_enemy_texture()
 	sounds = load_sounds()
 	transition.init(SCREEN_WIDTH, SCREEN_HEIGHT)
 
@@ -134,19 +155,28 @@ main :: proc() {
 	total_collectibles = len(collectibles)
 
 	rl.SetTargetFPS(144)
-	for !rl.WindowShouldClose() {
-		if (rl.IsWindowResized()) {
-			WINDOW_WIDTH = int(rl.GetScreenWidth())
-			WINDOW_HEIGHT = int(rl.GetScreenHeight())
-		}
-		update()
-		draw()
-		free_all(context.temp_allocator)
-	}
-	delete(enemies)
-	unload_player_texture()
-	unload_enemy_texture()
 }
+
+@(export)
+main_update :: proc "c" () -> bool {
+	context = web_context
+	update()
+	draw()
+	free_all(context.temp_allocator)
+
+	// return !rl.WindowShouldClose()
+	return true
+}
+
+@(export)
+main_end :: proc "c" () {
+	context = web_context
+	rl.CloseWindow()
+	rl.CloseAudioDevice()
+
+	unload_player_texture()
+}
+
 
 get_relative_pos :: proc(pos: rl.Vector2) -> rl.Vector2 {
 	return pos - gamestate.camera_offset + {SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2}
@@ -163,7 +193,6 @@ draw :: proc() {
 		draw_collectibles(gamestate.current_level, tilesheet)
 		draw_tiles(gamestate.levels[gamestate.current_level], tilesheet)
 		render_player()
-		render_enemies()
 		rl.EndTextureMode()
 
 		rl.BeginTextureMode(gamestate.render_surface)
@@ -198,6 +227,7 @@ draw :: proc() {
 		rl.ClearBackground(rl.BLACK)
 		font_size :: 10
 
+
 		options: [2]string = {"play", "quit"}
 		for i in 0 ..< len(options) {
 			option := options[i]
@@ -212,6 +242,7 @@ draw :: proc() {
 				current_selected ? {25, 204, 176, 255} : rl.WHITE,
 			)
 		}
+
 		transition.draw()
 		rl.EndTextureMode()
 		rl.BeginDrawing()
@@ -287,7 +318,6 @@ update :: proc() -> f32 {
 		frametime := rl.GetFrameTime()
 		rl.UpdateMusicStream(bgm)
 		animate_player(frametime)
-		animate_enemies(frametime)
 		if !time.started {
 			time.t = f32(rl.GetTime())
 			time.started = true
@@ -368,6 +398,7 @@ update :: proc() -> f32 {
 		transition.update()
 		ctx := &gamestate.menu_context
 		blip_sound_index := int(rl.GetTime() * 2) % 3
+
 		if (ctx.starting_playing) {
 			if transition.transition.progress == 1 {
 				gamestate.state = .Playing
@@ -407,4 +438,12 @@ update :: proc() -> f32 {
 		}
 	}
 	return time.simulation_time / TICK_RATE
+}
+
+
+@(export)
+web_window_size_changed :: proc "c" (w: c.int, h: c.int) {
+	context = web_context
+	WINDOW_WIDTH = int(w)
+	WINDOW_HEIGHT = int(h)
 }
