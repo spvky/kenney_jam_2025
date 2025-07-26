@@ -1,23 +1,18 @@
 package ldtk
 
+import "../utils"
 import "core:encoding/json"
-import "core:os"
 
-load_from_file :: proc(
-	filename: string,
-	allocator := context.allocator,
-) -> Maybe(Project) {
-	data, ok := os.read_entire_file(filename, allocator)
+
+load_from_file :: proc(filename: string, allocator := context.allocator) -> Maybe(Project) {
+	data, ok := utils.read_entire_file(filename, allocator)
 	if !ok {
 		return nil
 	}
 	return load_from_memory(data, allocator)
 }
 
-load_from_memory :: proc(
-	data: []byte,
-	allocator := context.allocator,
-) -> Maybe(Project) {
+load_from_memory :: proc(data: []byte, allocator := context.allocator) -> Maybe(Project) {
 	result: Project
 	err := json.unmarshal(data, &result, json.DEFAULT_SPECIFICATION, allocator)
 	if err == nil {
@@ -317,17 +312,11 @@ Layer_Definition :: struct {
 	type:                                 Type `json:"type"`,
 	// Contains all the auto-layer rule definitions.
 	auto_rule_groups:                     []Auto_Layer_Rule_Group `json:"autoRuleGroups"`,
-	auto_source_layer_def_uid:            Maybe(
-		int,
-	) `json:"autoSourceLayerDefUid"`,
+	auto_source_layer_def_uid:            Maybe(int) `json:"autoSourceLayerDefUid"`,
 	// **WARNING**: this deprecated value is no longer exported since version 1.2.0  Replaced
 	// by: `tilesetDefUid`
-	auto_tileset_def_uid:                 Maybe(
-		int,
-	) `json:"autoTilesetDefUid"`,
-	auto_tiles_killed_by_other_layer_uid: Maybe(
-		int,
-	) `json:"autoTilesKilledByOtherLayerUid"`,
+	auto_tileset_def_uid:                 Maybe(int) `json:"autoTilesetDefUid"`,
+	auto_tiles_killed_by_other_layer_uid: Maybe(int) `json:"autoTilesKilledByOtherLayerUid"`,
 	biome_field_uid:                      Maybe(int) `json:"biomeFieldUid"`,
 	// Allow editor selections when the layer is not currently active.
 	can_select_when_inactive:             bool `json:"canSelectWhenInactive"`,
@@ -511,9 +500,7 @@ Tileset_Definition :: struct {
 	c_width:              int `json:"__cWid"`,
 	// The following data is used internally for various optimizations. It's always synced with
 	// source image changes.
-	cached_pixel_data:    Maybe(
-		map[string]Maybe(json.Value),
-	) `json:"cachedPixelData"`,
+	cached_pixel_data:    Maybe(map[string]Maybe(json.Value)) `json:"cachedPixelData"`,
 	// An array of custom tile metadata
 	custom_data:          []Tile_Custom_Metadata `json:"customData"`,
 	// If this value is set, then it means that this atlas uses an internal LDtk atlas image
@@ -534,9 +521,7 @@ Tileset_Definition :: struct {
 	// if no image was provided, or when using an embed atlas.
 	rel_path:             string `json:"relPath"`,
 	// Array of group of tiles selections, only meant to be used in the editor
-	saved_selections:     []map[string]Maybe(
-		json.Value,
-	) `json:"savedSelections"`,
+	saved_selections:     []map[string]Maybe(json.Value) `json:"savedSelections"`,
 	// Space in pixels between all tiles
 	spacing:              int `json:"spacing"`,
 	// An array of user-defined tags to organize the Tilesets
@@ -838,9 +823,7 @@ Field_Definition :: struct {
 	symmetrical_ref:         bool `json:"symmetricalRef"`,
 	// Possible values: <`nil`>, `LangPython`, `LangRuby`, `LangJS`, `LangLua`, `LangC`,
 	// `LangHaxe`, `LangMarkdown`, `LangJson`, `LangXml`, `LangLog`
-	text_language_mode:      Maybe(
-		Text_Language_Mode,
-	) `json:"textLanguageMode"`,
+	text_language_mode:      Maybe(Text_Language_Mode) `json:"textLanguageMode"`,
 	// UID of the tileset used for a Tile
 	tileset_uid:             Maybe(int) `json:"tilesetUid"`,
 	// Internal enum representing the possible field types. Possible values: F_Int, F_Float,
