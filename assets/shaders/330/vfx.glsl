@@ -4,16 +4,6 @@ in vec2 fragTexCoord;
 out vec4 finalColor;
 
 uniform sampler2D texture0;
-uniform int u_tex_height;
-uniform int u_tex_width;
-
-uniform float u_camera_offset_x;
-uniform float u_camera_offset_y;
-
-uniform float u_wave_center_x;
-uniform float u_wave_center_y;
-
-uniform float u_time;
 
 #define MAX_RIPPLES 10
 uniform float u_times[MAX_RIPPLES];
@@ -33,11 +23,10 @@ void main() {
 		float offset = time;
 		float current_time = offset;
 		vec3 wave_params = vec3(10.0, 0.8, 0.1 );
-		float ratio = float(u_tex_height)/float(u_tex_width);
 		vec2 uv = fragTexCoord.xy;
 
 		vec2 center = u_centers[i];
-		center.y = 1 - center.y;
+		center.y = 1.0 - center.y;
 		vec2 wave_center = center;
 		float dist = distance(uv, wave_center);
 
@@ -48,13 +37,13 @@ void main() {
 			float scale_diff = (1.0 - pow(abs(diff * wave_params.x), wave_params.y));
 			float diffuse = u_diffuse[i];
 			float diff_time = (diff  * scale_diff);
-			uv += ((normalize(uv - wave_center) * diff_time) / ((current_time * dist * diffuse) + 1));
+			uv += ((normalize(uv - wave_center) * diff_time) / ((current_time * dist * diffuse) + 1.0));
 			vec4 color = texture(texture0, uv);
-			if (color == vec4(1, 1, 1, 1)) {
-				color = vec4(u_palette[u_gradients[i]], 1);
+			if (color == vec4(1.0, 1.0, 1.0, 1.0)) {
+				color = vec4(u_palette[u_gradients[i]], 1.0);
 			}
-			color += (color * scale_diff) / ((current_time * dist * diffuse) + 1);
-			finalColor += vec4(color.rgb, 1);
+			color += (color * scale_diff) / ((current_time * dist * diffuse) + 1.0);
+			finalColor += vec4(color.rgb, 1.0);
 		}
 	}
 }

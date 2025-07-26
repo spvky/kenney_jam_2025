@@ -23,7 +23,13 @@ init :: proc(screen_width: i32, screen_height: i32) {
 
 	transition.fallback_texture = temp_fallback.texture
 
-	transition.shader = rl.LoadShader(nil, "assets/shaders/transition.glsl")
+
+	#partial switch arch := ODIN_ARCH; arch {
+	case .wasm32, .wasm64p32:
+		transition.shader = rl.LoadShader(nil, "assets/shaders/100/transition.glsl")
+	case:
+		transition.shader = rl.LoadShader(nil, "assets/shaders/330/transition.glsl")
+	}
 	transition.progress = 1
 }
 

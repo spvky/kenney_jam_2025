@@ -111,7 +111,12 @@ main :: proc() {
 	ui_textures = load_ui_textures()
 	tilesheet = rl.LoadTexture("assets/Tilemap/monochrome_tilemap_transparent.png")
 
-	gamestate.vfx_shader = rl.LoadShader(nil, "assets/shaders/vfx.glsl")
+	#partial switch arch := ODIN_ARCH; arch {
+	case .wasm32, .wasm64p32:
+		gamestate.vfx_shader = rl.LoadShader(nil, "assets/shaders/100/vfx.glsl")
+	case:
+		gamestate.vfx_shader = rl.LoadShader(nil, "assets/shaders/330/vfx.glsl")
+	}
 
 
 	if project, ok := ldtk.load_from_file("assets/level.ldtk", context.temp_allocator).?; ok {
