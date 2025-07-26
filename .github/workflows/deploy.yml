@@ -41,13 +41,18 @@ jobs:
             cmake \
             ninja-build
 
+      - name: Setup Odin
+        uses: laytan/setup-odin@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          release: dev-2025-07
       - name: Build Game
         run: |
-          ODIN_VERSION="dev-2025-07"
-          curl -L "https://github.com/odin-lang/Odin/releases/download/${ODIN_VERSION}/odin-linux-amd64-${ODIN_VERSION}.tar.gz" -o odin.tar.gz
-          tar -xzf odin.tar.gz
+          # ODIN_VERSION="dev-2025-07"
+          # curl -L "https://github.com/odin-lang/Odin/releases/download/${ODIN_VERSION}/odin-linux-amd64-${ODIN_VERSION}.tar.gz" -o odin.tar.gz
+          # tar -xzf odin.tar.gz
 
-          export ODIN="odin-linux-amd64-${ODIN_VERSION}/odin"
+          # export ODIN="odin-linux-amd64-${ODIN_VERSION}/odin"
           ./web_build.sh
 
       - name: Prepare Deployment
