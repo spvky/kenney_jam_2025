@@ -54,6 +54,7 @@ jobs:
         run: |
           mkdir -p public
           cp -r build/web/* public/
+          ls public/
           # Ensure main HTML is named index.html
           [ -f public/index.html ] || mv public/*.html public/index.html
 
